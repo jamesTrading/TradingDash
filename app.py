@@ -115,17 +115,17 @@ def FibonacciGrapher(CompanyCode, dates, homie, selldate, scost,selldate1, scost
     fig = px.line(df1, x=df1.index, y="Close", title=king, width=1000, height = 700)
     while buyloop < len(homie):
         df2 = pd.DataFrame(data = {'Dates':dates,'BuyPrice':homie})
-        fig.add_trace(go.Scatter(x=df2['Dates'],y=df2['BuyPrice'], mode = 'markers',marker=dict(size=10, color="Green"),showlegend=False))
+        fig.add_trace(go.Scatter(x=df2['Dates'],y=df2['BuyPrice'], mode = 'markers',marker=dict(size=15, color="Green"),showlegend=False))
         buyloop = buyloop + 1
     sellloop = 0
     while sellloop <  len(scost):
         df3 = pd.DataFrame(data = {'Dates':selldate,'SellPrice':scost})
-        fig.add_trace(go.Scatter(x=df3['Dates'],y=df3['SellPrice'], mode = 'markers',marker=dict(size=10, color="Red"),showlegend=False))
+        fig.add_trace(go.Scatter(x=df3['Dates'],y=df3['SellPrice'], mode = 'markers',marker=dict(size=15, color="Red"),showlegend=False))
         sellloop = sellloop + 1
     sellloop = 0
     while sellloop <  len(scost1):
         df4 = pd.DataFrame(data = {'Dates':selldate1,'SellPrice1':scost1})
-        fig.add_trace(go.Scatter(x=df4['Dates'],y=df4['SellPrice1'], mode = 'markers',marker=dict(size=10, color="Yellow"),showlegend=False))
+        fig.add_trace(go.Scatter(x=df4['Dates'],y=df4['SellPrice1'], mode = 'markers',marker=dict(size=15, color="Yellow"),showlegend=False))
         sellloop = sellloop + 1
     fig.update_xaxes(dtick="M1",tickformat="%b\n%Y")
     fig.add_trace(go.Scatter(x=df1.index,y=df1['HFib'], mode = 'lines',marker=dict(size=1, color="purple"),showlegend=False))

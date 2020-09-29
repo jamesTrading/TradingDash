@@ -253,6 +253,7 @@ def TradingAlgo(selected_dropdown_value):
                                 lastmin.append(min(df2['Close'][(counter - 90):(counter - 5)]))
                             if days-counter > 90:                         
                                 signal = round((((lastmax[len(lastmax)-1]-lastmin[len(lastmax)-1])*0.618+round(float(df2['Close'][counter]),2))-round(float(df2['Close'][(counter)]),2))/round(float(df2['Close'][(counter)]),2),5)
+                            if days - counter <= 90:
                                 if days - counter < 2:                                  
                                     signal = round((((lastmax[len(lastmax)-1]-lastmin[len(lastmax)-1])*0.618+round(float(df2['Close'][counter]),2))-round(float(df2['Close'][(counter)]),2))/round(float(df2['Close'][(counter)]),2),5)
                                 else:                                    

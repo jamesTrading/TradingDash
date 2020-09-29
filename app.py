@@ -168,13 +168,8 @@ def TradingAlgo(selected_dropdown_value):
     BuyRange = []
     buyer = 0
     CompanyCode = selected_dropdown_value
-    if "." in CompanyCode:
-        market = pdr.get_data_yahoo('^AXJO',start=datetime.datetime(2018,1,1), end=date.today())
-    else:
-        market = pdr.get_data_yahoo('^GSPC',start=datetime.datetime(2018,1,1), end=date.today())
     stock = pdr.get_data_yahoo(CompanyCode,start=datetime.datetime(2018,1,1), end=date.today())
     days = stock['Close'].count()
-    cuck = market['Close'].count()  
     while timer < days:
         timetrack.append((timer+1))
         timer = timer + 1
@@ -185,10 +180,7 @@ def TradingAlgo(selected_dropdown_value):
         SellRange.append(80)
         seller = seller + 1
     df2 = pd.DataFrame(stock)
-    df1 = pd.DataFrame(market)
     df2.index = pd.to_datetime(df2.index)
-    df2['LMA'] = df2.rolling(window=100).mean()['Close']
-    df2['SMA'] = df2.rolling(window=30).mean()['Close']
     df2['Typical Price'] = (df2['Close'] + df2['High'] + df2['Low'])/3
     AbsTP.append(df2['Typical Price'].iloc[x])
     while x < (days - 1):
@@ -253,49 +245,21 @@ def TradingAlgo(selected_dropdown_value):
                 if (df2['MACD'][counter-1]) < (df2['Signal Line'][counter-1]):
                     if abs((df2['MACD'][counter-1] - df2['Signal Line'][counter-1])) < abs((df2['MACD'][counter-2] - df2['Signal Line'][counter-2])):
                         if abs(df2['MACD'][counter-1]) > abs(df2['MACD'][counter-2]):
-                            Valnear = df2['Close'][(counter):(counter+90)]
-                            maxValnear.append(max(Valnear))
-                            maxposition = np.where(Valnear == Valnear.max())
-                            maxposition = maxposition[0][0]
-                            bigposition.append(int(maxposition))
                             if counter < 90:
                                 lastmax.append(max(df2['Close'][(0):(counter)]))
                                 lastmin.append(min(df2['Close'][(0):(counter)]))
                             else:
                                 lastmax.append(max(df2['Close'][(counter - 90):(counter-5)]))
                                 lastmin.append(min(df2['Close'][(counter - 90):(counter - 5)]))
-                            if days-counter > 90:
-                                mfucker.append((((lastmax[len(lastmax)-1]-lastmin[len(lastmax)-1])*0.618+round(float(df2['Close'][counter]),2))-maxValnear[sharecount])/maxValnear[sharecount])                                
+                            if days-counter > 90:                         
                                 signal = round((((lastmax[len(lastmax)-1]-lastmin[len(lastmax)-1])*0.618+round(float(df2['Close'][counter]),2))-round(float(df2['Close'][(counter)]),2))/round(float(df2['Close'][(counter)]),2),5)
-                            if days - counter <= 90:
-                                Valnear = df2['Close'][(counter):(days-1)]
-                                if days - counter < 2:
-                                    maxValnear.append(df2['Close'][counter])
-                                    mfucker.append((((lastmax[len(lastmax)-1]-lastmin[len(lastmax)-1])*0.618+round(float(df2['Close'][counter]),2))-maxValnear[sharecount])/maxValnear[sharecount])
+                                if days - counter < 2:                                  
                                     signal = round((((lastmax[len(lastmax)-1]-lastmin[len(lastmax)-1])*0.618+round(float(df2['Close'][counter]),2))-round(float(df2['Close'][(counter)]),2))/round(float(df2['Close'][(counter)]),2),5)
-                                else:
-                                    maxValnear.append(max(Valnear))
-                                    mfucker.append((((lastmax[len(lastmax)-1]-lastmin[len(lastmax)-1])*0.618+round(float(df2['Close'][counter]),2))-maxValnear[sharecount])/maxValnear[sharecount])
+                                else:                                    
                                     signal = round((((lastmax[len(lastmax)-1]-lastmin[len(lastmax)-1])*0.618+round(float(df2['Close'][counter]),2))-round(float(df2['Close'][(counter)]),2))/round(float(df2['Close'][(counter)]),2),5)
                             if signal > 0.09:
-                                tendies.append(round((maxValnear[sharecount-1] - round(float(df2['Close'][(counter)]),2))/round(float(df2['Close'][(counter)]),2),3))
                                 dates.append(df2.index.date[counter])
                                 homie.append(round(float(df2['Close'][counter]),2))
-                                if (counter + 1) == days:
-                                    costbases = costbases + round(float(df2['Close'][(counter)]),2)
-                                else:
-                                    costbases = costbases + round(float(df2['Close'][(counter+1)]),2)
-                                bbb = bbb + round(float(df2['SMA'][counter]),2)
-                                bbbcounter = bbbcounter + 1
-                                sharecount = sharecount + 1
-                                trade_return.append(((maxValnear[sharecount-1] - round(float(df2['Close'][(counter)]),2))/round(float(df2['Close'][(counter)]),2))*100)
-                                market_return.append(((df1['Close'][counter+int(maxposition)] - round(float(df1['Close'][(counter)]),2))/round(float(df1['Close'][(counter)]),2))*100)
-                                if df2['Close'][counter] < df2['LMA'][counter]*0.95:
-                                    largebuy = (maxValnear[sharecount-1] - round(float(df2['Close'][(counter)]),2))/round(float(df2['Close'][(counter)]),2)*100 + largebuy
-                                    largebuycounter = largebuycounter + 1
-                                else:
-                                    small = (maxValnear[sharecount-1] - round(float(df2['Close'][(counter)]),2))/round(float(df2['Close'][(counter)]),2)*100 + small
-                                    smallcounter = smallcounter + 1
                             signal = 0
         counter = counter + 1
     TYPValue = TYPValue / (days)
@@ -312,8 +276,6 @@ def TradingAlgo(selected_dropdown_value):
                     if abs((df2['MACD'][sellcounter-1] - df2['Signal Line'][sellcounter-1])) < abs((df2['MACD'][sellcounter-2] - df2['Signal Line'][sellcounter-2])):
                         selldate.append(df2.index.date[sellcounter])
                         scost.append(round(float(df2['Close'][sellcounter]),2))
-                        sprice = sprice + round(float(df2['Close'][(sellcounter + 1)]),2)
-                        scount = scount + 1
         sellcounter = sellcounter + 1
     sellcounter = 0
     selldate1 = []
@@ -328,8 +290,6 @@ def TradingAlgo(selected_dropdown_value):
                     if df2['MACD'][sellcounter] < df2['Signal Line'][sellcounter]:
                         selldate1.append(df2.index.date[sellcounter])
                         scost1.append(round(float(df2['Close'][sellcounter]),2))
-                        sprice1 = sprice1 + round(float(df2['Close'][(sellcounter + 1)]),2)
-                        scount1 = scount1 + 1
         sellcounter = sellcounter + 1
     if sharecount == 0:
         bloop = FibonacciGrapher(CompanyCode, dates, homie, selldate, scost, selldate1, scost1)

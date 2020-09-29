@@ -357,13 +357,13 @@ app.layout = html.Div([
         dcc.Input(id='input', value='AAPL', type='text', debounce=True),
         dcc.Graph(id='my-graph')
         
-        ],style={'width': '65%'}),
+        ],style={'width': '65%','display': 'inline-block'}),
     #this is the 2nd section which will have a table of technical results
     html.Div([
         html.H4('Display of the Technical Results'),
         html.Table(id = 'my-table')
         
-        ],style={'width': '35%', 'float': 'right'})
+        ],style={'width': '30%', 'float': 'right','display': 'inline-block'})
 ])
 
 #This app callback updates the graph as per the relevant company

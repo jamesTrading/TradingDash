@@ -169,10 +169,13 @@ def TradingAlgo(selected_dropdown_value, junky):
     BuyRange = []
     buyer = 0
     CompanyCode = selected_dropdown_value
+    outputlist = []
     if "." in CompanyCode:
         market = pdr.get_data_yahoo('^AXJO',start=datetime.datetime(2018,1,1), end=date.today())
+        outputlist.append(('Australian Market - '+ CompanyCode))
     else:
         market = pdr.get_data_yahoo('^GSPC',start=datetime.datetime(2018,1,1), end=date.today())
+        outputlist.append(('US Market - '+ CompanyCode))
     stock = pdr.get_data_yahoo(CompanyCode,start=datetime.datetime(2018,1,1), end=date.today())
     days = stock['Close'].count()
     cuck = market['Close'].count()  
@@ -300,7 +303,6 @@ def TradingAlgo(selected_dropdown_value, junky):
                             signal = 0
         counter = counter + 1
     TYPValue = TYPValue / (days)
-    outputlist = []
     outputlist.append(("The last buy date is: ", dates[len(dates)-1]))
     outputlist.append(("last price bought for: ", homie[len(homie)-1]))
     outputlist.append(("The expected sell point is: ", round((lastmax[len(lastmax)-1]-lastmin[len(lastmax)-1])*0.618+homie[len(homie)-1],2)))

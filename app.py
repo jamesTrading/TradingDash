@@ -303,7 +303,7 @@ def TradingAlgo(selected_dropdown_value, junky):
                             signal = 0
         counter = counter + 1
     TYPValue = TYPValue / (days)
-    outputlist.append(("The last buy date is: ", dates[len(dates)-1]))
+    outputlist.append(("The last buy date is: $", dates[len(dates)-1]))
     outputlist.append(("The last price bought for: ", homie[len(homie)-1]))
     outputlist.append(("The expected sell point is: ", round((lastmax[len(lastmax)-1]-lastmin[len(lastmax)-1])*0.618+homie[len(homie)-1],2)))
     outputlist.append(("The expected return on the buy: ", round(((((lastmax[len(lastmax)-1]-lastmin[len(lastmax)-1])*0.618+homie[len(homie)-1]-homie[len(homie)-1])/homie[len(homie)-1])*100),3),"%"))

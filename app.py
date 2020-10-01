@@ -427,6 +427,7 @@ app.layout = html.Div([
     html.Div([
         html.H4('Chart with Buy/Sell Signals'),
         dcc.Input(id='input', value='AAPL', type='text', debounce=True),
+        html.Button('Submit', id='btn-nclicks-1', n_clicks=0),
         dcc.Graph(id='my-graph')
         
         ],style={'width': '65%','display': 'inline-block'}),

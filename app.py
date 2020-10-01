@@ -141,7 +141,7 @@ def FibonacciGrapher(CompanyCode, dates, homie, selldate, scost,selldate1, scost
 
 
 #This is the part of the app for producing the main info and buy/sell points
-def TradingAlgo(selected_dropdown_value, junky):
+def TradingAlgo(selected_dropdown_value, junky, signalinput):
     costbases = 0
     factor = junky
     sharecount = 0
@@ -281,7 +281,7 @@ def TradingAlgo(selected_dropdown_value, junky):
                                     maxValnear.append(max(Valnear))
                                     mfucker.append((((lastmax[len(lastmax)-1]-lastmin[len(lastmax)-1])*0.618+round(float(df2['Close'][counter]),2))-maxValnear[sharecount])/maxValnear[sharecount])
                                     signal = round((((lastmax[len(lastmax)-1]-lastmin[len(lastmax)-1])*0.618+round(float(df2['Close'][counter]),2))-round(float(df2['Close'][(counter)]),2))/round(float(df2['Close'][(counter)]),2),5)
-                            if signal > 0.09:
+                            if signal > signalinput:
                                 tendies.append(round((maxValnear[sharecount-1] - round(float(df2['Close'][(counter)]),2))/round(float(df2['Close'][(counter)]),2),3))
                                 dates.append(df2.index.date[counter])
                                 homie.append(round(float(df2['Close'][counter]),2))
@@ -427,6 +427,7 @@ app.layout = html.Div([
     html.Div([
         html.H4('Chart with Buy/Sell Signals'),
         dcc.Input(id='input', value='AAPL', type='text', debounce=True),
+        dcc.Input(id='signalinput', value=0.09, type='number', debounce=True),
         html.Button('Submit', id='btn-nclicks-1', n_clicks=0),
         dcc.Graph(id='my-graph')
         
@@ -440,16 +441,16 @@ app.layout = html.Div([
 ])
 
 #This app callback updates the graph as per the relevant company
-@app.callback(Output('my-graph','figure'),[Input('input','value')])
-def update_graph(selected_dropdown_value):
-    fig = TradingAlgo(selected_dropdown_value, 'bitch')
+@app.callback(Output('my-graph','figure'),[Input('input','value'),Input('signalinput','value')])
+def update_graph(selected_dropdown_value, signalinput):
+    fig = TradingAlgo(selected_dropdown_value, 'bitch', signalinput)
     return fig
 
 
 # for the output-list
-@app.callback(Output('my-table', 'children'), [Input('input', 'value')])
-def generate_output_list(selected_dropdown_value):
-    outputlist = TradingAlgo(selected_dropdown_value, 'dog')
+@app.callback(Output('my-table', 'children'), [Input('input', 'value'),Input('signalinput','value')])
+def generate_output_list(selected_dropdown_value, signalinput):
+    outputlist = TradingAlgo(selected_dropdown_value, 'dog', signalinput)
     # Header
     return [html.Tr(html.Th('Output List'))] + [html.Tr(html.Td(output)) for output in outputlist]
 

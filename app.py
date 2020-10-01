@@ -143,6 +143,7 @@ def FibonacciGrapher(CompanyCode, dates, homie, selldate, scost,selldate1, scost
 #This is the part of the app for producing the main info and buy/sell points
 def TradingAlgo(selected_dropdown_value, junky, signalinput):
     costbases = 0
+    signalinput = float(signalinput)
     factor = junky
     sharecount = 0
     counter = 0
@@ -427,7 +428,7 @@ app.layout = html.Div([
     html.Div([
         html.H4('Chart with Buy/Sell Signals'),
         dcc.Input(id='input', value='AAPL', type='text', debounce=True),
-        dcc.Input(id='signalinput', value=0.09, type='number', debounce=True),
+        dcc.Input(id='signalinput', value=0.09, type='text', debounce=True),
         html.Button('Submit', id='btn-nclicks-1', n_clicks=0),
         dcc.Graph(id='my-graph')
         

@@ -304,11 +304,11 @@ def TradingAlgo(selected_dropdown_value, junky):
         counter = counter + 1
     TYPValue = TYPValue / (days)
     outputlist.append(("The last buy date is: ", dates[len(dates)-1]))
-    outputlist.append(("last price bought for: ", homie[len(homie)-1]))
+    outputlist.append(("The last price bought for: ", homie[len(homie)-1]))
     outputlist.append(("The expected sell point is: ", round((lastmax[len(lastmax)-1]-lastmin[len(lastmax)-1])*0.618+homie[len(homie)-1],2)))
-    outputlist.append(("The expected tendies on the buy: ", round(((((lastmax[len(lastmax)-1]-lastmin[len(lastmax)-1])*0.618+homie[len(homie)-1]-homie[len(homie)-1])/homie[len(homie)-1])*100),3),"%"))
-    outputlist.append(("The average closeness to the predicted sell point was:", round((sum(mfucker)/len(mfucker))*100,3),"%"))
-    outputlist.append(("The average tendies on the each buy is: ", round((sum(tendies)/len(tendies))*100,3),"%"))
+    outputlist.append(("The expected return on the buy: ", round(((((lastmax[len(lastmax)-1]-lastmin[len(lastmax)-1])*0.618+homie[len(homie)-1]-homie[len(homie)-1])/homie[len(homie)-1])*100),3),"%"))
+    outputlist.append(("The average closeness to the predicted sell point was: ", round((sum(mfucker)/len(mfucker))*100,3),"%"))
+    outputlist.append(("The average return on the each buy is: ", round((sum(tendies)/len(tendies))*100,3),"%"))
     sellcounter = 0
     selldate = []
     sprice = 0
@@ -351,7 +351,7 @@ def TradingAlgo(selected_dropdown_value, junky):
         outputlist.append(("The MFI 1 day ago was:", round(float(df2['MFI'][(days - 1)]), 2)))
         outputlist.append(("The current price is:",currentprices))
         outputlist.append(("If bought today the sell point would be: ", round((max(df2['Close'][(days - 90):(days-5)])-min(df2['Close'][(days - 90):(days-5)]))*0.618+currentprices),2))
-        outputlist.append(("The realised tendies would be: ", round((((max(df2['Close'][(days - 90):(days-5)])-min(df2['Close'][(days - 90):(days-5)]))*0.618+currentprices-currentprices)/currentprices)*100,3),"%"))
+        outputlist.append(("The realised return would be: ", round((((max(df2['Close'][(days - 90):(days-5)])-min(df2['Close'][(days - 90):(days-5)]))*0.618+currentprices-currentprices)/currentprices)*100,3),"%"))
         outputlist.append(("################################"))
         outputlist.append(("The MACD 3 days ago was:",df2['MACD'][days-3]))
         outputlist.append(("The MACD 2 days ago was:",df2['MACD'][days-2]))
@@ -376,7 +376,7 @@ def TradingAlgo(selected_dropdown_value, junky):
     currentprices = round(float(df2['Close'][(days-1)]),2)
     pscost = costbases / sharecount
     if largebuycounter > 0:
-        outputlist.append(("The close return when bought with at least a 5% discount was: ", round(largebuy / largebuycounter,2),"  (",largebuycounter,")"))
+        outputlist.append(("The return when bought with 5%+ discount was: ", round(largebuy / largebuycounter,2),"  (",largebuycounter,")"))
     if smallcounter > 0:
         outputlist.append(("The close return for every other purchase: ", round(small / smallcounter,2),"  (",smallcounter,")"))
     outputlist.append(("Total number of shares bought:", sharecount))
@@ -389,7 +389,7 @@ def TradingAlgo(selected_dropdown_value, junky):
     outputlist.append(("The MFI 1 day ago was:", round(float(df2['MFI'][(days - 1)]), 2)))
     outputlist.append(("The current price is:",currentprices))
     outputlist.append(("If bought today the sell point would be: ", round((max(df2['Close'][(days - 90):(days-5)])-min(df2['Close'][(days - 90):(days-5)]))*0.618+currentprices,2)))
-    outputlist.append(("The realised tendies would be: ", round((((max(df2['Close'][(days - 90):(days-5)])-min(df2['Close'][(days - 90):(days-5)]))*0.618+currentprices-currentprices)/currentprices)*100,3),"%"))
+    outputlist.append(("The realised return would be: ", round((((max(df2['Close'][(days - 90):(days-5)])-min(df2['Close'][(days - 90):(days-5)]))*0.618+currentprices-currentprices)/currentprices)*100,3),"%"))
     outputlist.append(("################################"))
     outputlist.append(("The MACD 3 days ago was:",round(df2['MACD'][days-3],3)))
     outputlist.append(("The MACD 2 days ago was:",round(df2['MACD'][days-2],3)))
@@ -398,7 +398,7 @@ def TradingAlgo(selected_dropdown_value, junky):
     outputlist.append(("The difference 2 days ago was:", round((df2['MACD'][days-2] - df2['Signal Line'][days-2]),3)))
     outputlist.append(("The difference 1 day ago was:", round((df2['MACD'][days-1] - df2['Signal Line'][days-1]),3)))
     outputlist.append(("The current 100 MA value is:", round(df2['LMA'][days-1],3)))
-    outputlist.append(("The current discount to the 100 MA value is:", round(((df2['Close'][days-1]-df2['LMA'][days-1])/df2['LMA'][days-1])*100,3),'%'))
+    outputlist.append(("The current value over the 100 MA value is: ", round(((df2['Close'][days-1]-df2['LMA'][days-1])/df2['LMA'][days-1])*100,3),'%'))
     if round(float(df2['MFI'][days-1]),2) < 30:
             if df2['MACD'][days-1] < 0:
                 if (df2['MACD'][days-1]) < (df2['Signal Line'][days-1]):

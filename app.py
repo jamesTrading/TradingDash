@@ -464,7 +464,12 @@ app.layout = html.Div([
         html.H4('Display of the Technical Results'),
         html.Table(id = 'my-table')
         
-        ],style={'width': '30%', 'float': 'right','display': 'inline-block'})
+        ],style={'width': '30%', 'float': 'right','display': 'inline-block'}),
+    
+    html.Div([
+        dcc.Graph(id='macd-graph')
+        
+        ],style={'width': '50%', 'float': 'left','display': 'inline-block'})
 ])
 
 #This app callback updates the graph as per the relevant company

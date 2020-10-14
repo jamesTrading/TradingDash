@@ -60,6 +60,8 @@ def FibonacciGrapher(CompanyCode, dates, homie, selldate, scost,selldate1, scost
         Fib38.append((High[x]-Low[x])*0.382 + Low[x])
         Extension.append(round((((float(High[x]) - float(Low[x]))*1.618)+float(Low[x])),2))
         x = x + 1
+        if ((x+1)*100 == days):
+            x = x+2
         differenceidentify = 0
     df1 = df1.dropna()
     while y < (days-count):

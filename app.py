@@ -414,6 +414,30 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
     else:
         return outputlist
 
+ def MACD_BuySignal_graphed(selected_dropdown_value):
+    CompanyCode = selected_dropdown_value
+    stock = pdr.get_data_yahoo(CompanyCode,start=datetime.datetime(2019,9,1), end=date.today())
+    days = stock['Close'].count()
+    timer = 0
+    timetrack = []
+    while timer < (days - 33):
+        timetrack.append(0)
+        timer = timer + 1
+    df2 = pd.DataFrame(stock, columns = ['Close'])
+    df2['26 EMA'] = df2.ewm(span = 26, min_periods = 26).mean()['Close']
+    df2['12 EMA'] = df2.ewm(span = 12, min_periods = 12).mean()['Close']
+    df2['MACD'] = df2['12 EMA'] - df2['26 EMA']
+    df2['Signal Line'] = df2.ewm(span = 9, min_periods = 9).mean()['MACD']
+    df2 = df2.dropna()
+    df2['Zero Line'] = timetrack
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=df2.index,y=df2['MACD'], mode = 'lines',marker=dict(size=1, color="red"),showlegend=False))
+    fig.update_xaxes(dtick="M1",tickformat="%b\n%Y")
+    fig.add_trace(go.Scatter(x=df2.index,y=df2['Signal Line'], mode = 'lines',marker=dict(size=1, color="green"),showlegend=False))
+    fig.add_trace(go.Scatter(x=df2.index,y=df2['Zero Line'], mode = 'lines',marker=dict(size=1, color="blue"),showlegend=False))
+    fig.update_layout(title="MACD Graph",xaxis_title="Time",yaxis_title="MACD Value", width=850, height = 550)
+    return fig 
+    
 #this creates the app -- imports the stylesheet
 app = dash.Dash(__name__)
 server = app.server
@@ -457,7 +481,10 @@ def generate_output_list(selected_dropdown_value, signalinput):
     # Header
     return [html.Tr(html.Th('Output List'))] + [html.Tr(html.Td(output)) for output in outputlist]
 
-
+@app.callback(Output('macd-graph','figure'),[Input('input','value')])
+def update_macd(selected_dropdown_value):
+    fig = MACD_BuySignal_graphed(selected_dropdown_value)
+    return fig
 
 if __name__ == '__main__':
     app.run_server(debug=True)

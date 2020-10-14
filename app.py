@@ -413,8 +413,8 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
         return bloop
     else:
         return outputlist
-
- def MACD_BuySignal_graphed(selected_dropdown_value):
+    
+def MACD_BuySignal_graphed(selected_dropdown_value):
     CompanyCode = selected_dropdown_value
     stock = pdr.get_data_yahoo(CompanyCode,start=datetime.datetime(2019,9,1), end=date.today())
     days = stock['Close'].count()

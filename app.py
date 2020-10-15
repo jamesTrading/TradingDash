@@ -129,7 +129,7 @@ def FibonacciGrapher(CompanyCode, dates, homie, selldate, scost,selldate1, scost
         df4 = pd.DataFrame(data = {'Dates':selldate1,'SellPrice1':scost1})
         fig.add_trace(go.Scatter(x=df4['Dates'],y=df4['SellPrice1'], mode = 'markers',marker=dict(size=12, color="Yellow"),showlegend=False))
         sellloop = sellloop + 1
-    fig.update_xaxes(dtick="M1",tickformat="%b\n%Y")
+    fig.update_xaxes(dtick="M2",tickformat="%d\n%b\n%Y")
     fig.add_trace(go.Scatter(x=df1.index,y=df1['HFib'], mode = 'lines',marker=dict(size=1, color="purple"),showlegend=False))
     fig.add_trace(go.Scatter(x=df1.index,y=df1['HFib2'], mode = 'lines',marker=dict(size=1, color="purple"),showlegend=False))
     fig.add_trace(go.Scatter(x=df1.index,y=df1['High3'], mode = 'lines',marker=dict(size=1, color="purple"),showlegend=False))
@@ -432,7 +432,7 @@ def MACD_BuySignal_graphed(selected_dropdown_value):
     df2['Zero Line'] = timetrack
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=df2.index,y=df2['MACD'], mode = 'lines',marker=dict(size=1, color="red"),showlegend=False))
-    fig.update_xaxes(dtick="M1",tickformat="%b\n%Y")
+    fig.update_xaxes(dtick="M2",tickformat="%d\n%b\n%Y")
     fig.add_trace(go.Scatter(x=df2.index,y=df2['Signal Line'], mode = 'lines',marker=dict(size=1, color="green"),showlegend=False))
     fig.add_trace(go.Scatter(x=df2.index,y=df2['Zero Line'], mode = 'lines',marker=dict(size=1, color="blue"),showlegend=False))
     fig.update_layout(title="MACD Graph",xaxis_title="Time",yaxis_title="MACD Value", width=750, height = 550)
@@ -501,7 +501,7 @@ def MoneyFlowIndex(selected_dropdown_value):
     df2['BUYER'] = BuyRange
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=df2.index,y=df2['MFI'], mode = 'lines',marker=dict(size=1, color="blue"),showlegend=False))
-    fig.update_xaxes(dtick="M1",tickformat="%b\n%Y")
+    fig.update_xaxes(dtick="M2",tickformat="%d\n%b\n%Y")
     fig.add_trace(go.Scatter(x=df2.index,y=df2['BUYER'], mode = 'lines',marker=dict(size=1, color="green"),showlegend=False))
     fig.add_trace(go.Scatter(x=df2.index,y=df2['SELL'], mode = 'lines',marker=dict(size=1, color="red"),showlegend=False))
     fig.update_layout(title="Money Flow Index",xaxis_title="Time",yaxis_title="MFI Value", width=750, height = 550)

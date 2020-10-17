@@ -431,11 +431,15 @@ def MACD_BuySignal_graphed(selected_dropdown_value):
     df2 = df2.dropna()
     df2['Zero Line'] = timetrack
     fig = go.Figure()
+    if "." in CompanyCode:
+        king = ('MACD Graph - '+ CompanyCode)
+    else:
+        king = ('MACD Graph - '+ CompanyCode)
     fig.add_trace(go.Scatter(x=df2.index,y=df2['MACD'], mode = 'lines',marker=dict(size=1, color="red"),showlegend=False))
     fig.update_xaxes(dtick="M2",tickformat="%d\n%b\n%Y")
     fig.add_trace(go.Scatter(x=df2.index,y=df2['Signal Line'], mode = 'lines',marker=dict(size=1, color="green"),showlegend=False))
     fig.add_trace(go.Scatter(x=df2.index,y=df2['Zero Line'], mode = 'lines',marker=dict(size=1, color="blue"),showlegend=False))
-    fig.update_layout(title="MACD Graph",xaxis_title="Time",yaxis_title="MACD Value", width=750, height = 550)
+    fig.update_layout(title=king,xaxis_title="Time",yaxis_title="MACD Value", width=750, height = 550)
     return fig 
 
 def MoneyFlowIndex(selected_dropdown_value):
@@ -500,11 +504,15 @@ def MoneyFlowIndex(selected_dropdown_value):
     df2['SELL'] = SellRange
     df2['BUYER'] = BuyRange
     fig = go.Figure()
+    if "." in CompanyCode:
+        king = ('Money Flow Index - '+ CompanyCode)
+    else:
+        king = ('Money Flow Index - '+ CompanyCode)
     fig.add_trace(go.Scatter(x=df2.index,y=df2['MFI'], mode = 'lines',marker=dict(size=1, color="blue"),showlegend=False))
     fig.update_xaxes(dtick="M2",tickformat="%d\n%b\n%Y")
     fig.add_trace(go.Scatter(x=df2.index,y=df2['BUYER'], mode = 'lines',marker=dict(size=1, color="green"),showlegend=False))
     fig.add_trace(go.Scatter(x=df2.index,y=df2['SELL'], mode = 'lines',marker=dict(size=1, color="red"),showlegend=False))
-    fig.update_layout(title="Money Flow Index",xaxis_title="Time",yaxis_title="MFI Value", width=750, height = 550)
+    fig.update_layout(title=king,xaxis_title="Time",yaxis_title="MFI Value", width=750, height = 550)
     return fig
 
 

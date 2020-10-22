@@ -14,7 +14,7 @@ import plotly.graph_objects as go
 import plotly
 
 #This is the part of the code that takes buy points and displays them
-def FibonacciGrapher(CompanyCode, dates, homie, selldate, scost,selldate1, scost1): 
+def FibonacciGrapher(CompanyCode, dates, homie, selldate, scost,selldate1, scost1,BBUY, BBUYDate): 
     CompanyCode = CompanyCode
     x = 0
     y = 0
@@ -117,7 +117,12 @@ def FibonacciGrapher(CompanyCode, dates, homie, selldate, scost,selldate1, scost
     fig = px.line(df1, x=df1.index, y="Close", title=king, width=1000, height = 700)
     while buyloop < len(homie):
         df2 = pd.DataFrame(data = {'Dates':dates,'BuyPrice':homie})
-        fig.add_trace(go.Scatter(x=df2['Dates'],y=df2['BuyPrice'], mode = 'markers',marker=dict(size=12, color="Green"),showlegend=False))
+        fig.add_trace(go.Scatter(x=df2['Dates'],y=df2['BuyPrice'], mode = 'markers',marker=dict(size=12, color="lightgreen"),showlegend=False))
+        buyloop = buyloop + 1
+    buyloop = 0
+    while buyloop < len(BBUY):
+        df2 = pd.DataFrame(data = {'Dates':BBUYDate,'BuyPrice':BBUY})
+        fig.add_trace(go.Scatter(x=df2['Dates'],y=df2['BuyPrice'], mode = 'markers',marker=dict(size=12, color="green"),showlegend=False))
         buyloop = buyloop + 1
     sellloop = 0
     while sellloop <  len(scost):
@@ -253,6 +258,10 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
     mfucker = []
     signal = 0
     tendies = []
+    MFItracker = []
+    internalcounter = 3
+    BBUY = []
+    BBUYDate = []
     while counter < (days):
         TYPValue = round(float(df2['Close'][counter]),2) + TYPValue
         if round(float(df2['MFI'][counter]),2) < 30:
@@ -288,6 +297,7 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
                                 tendies.append(round((maxValnear[sharecount-1] - round(float(df2['Close'][(counter)]),2))/round(float(df2['Close'][(counter)]),2),3))
                                 dates.append(df2.index.date[counter])
                                 homie.append(round(float(df2['Close'][counter]),2))
+                                MFItracker.append(df2['MFI'][counter])
                                 if (counter + 1) == days:
                                     costbases = costbases + round(float(df2['Close'][(counter)]),2)
                                 else:
@@ -303,7 +313,34 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
                                 else:
                                     small = (maxValnear[sharecount-1] - round(float(df2['Close'][(counter)]),2))/round(float(df2['Close'][(counter)]),2)*100 + small
                                     smallcounter = smallcounter + 1
-                            signal = 0
+                                signal = 0
+                                lengthy = 15
+                                if (days - counter) < 15:
+                                    lengthy = counter - days - 3
+                                while internalcounter < lengthy:
+                                    if df2['MFI'][(counter+internalcounter)] > MFItracker[len(MFItracker)-1]:
+                                        if (df2['Close'][counter+internalcounter]-df2['Close'][counter])/df2['Close'][counter] < -0.04:
+                                            tendies.append(round((maxValnear[sharecount-1] - round(float(df2['Close'][(counter+internalcounter)]),2))/round(float(df2['Close'][(counter+internalcounter)]),2),3))
+                                            dates.append(df2.index.date[counter+internalcounter])
+                                            homie.append(round(float(df2['Close'][counter+internalcounter]),2))
+                                            MFItracker.append(df2['MFI'][counter+internalcounter])
+                                            BBUY.append(round(float(df2['Close'][counter+internalcounter]),2))
+                                            BBUYDate.append(df2.index.date[counter+internalcounter])
+                                            costbases = costbases + round(float(df2['Close'][(counter+internalcounter)]),2)
+                                            sharecount = sharecount + 1
+                                            Valnear = df2['Close'][(counter+internalcounter):(counter+90+internalcounter)]
+                                            if days - counter - internalcounter <= 90:
+                                                Valnear = df2['Close'][(counter+internalcounter):(days-1)]
+                                            maxValnear.append(max(Valnear))
+                                            trade_return.append(((maxValnear[sharecount-1] - round(float(df2['Close'][(counter)]),2))/round(float(df2['Close'][(counter)]),2))*100)
+                                            if df2['Close'][(counter+internalcounter)] < df2['LMA'][(counter+internalcounter)]*0.95:
+                                                largebuy = (maxValnear[sharecount-1] - round(float(df2['Close'][(counter+internalcounter)]),2))/round(float(df2['Close'][(counter+internalcounter)]),2)*100 + largebuy
+                                                largebuycounter = largebuycounter + 1
+                                            else:
+                                                small = (maxValnear[sharecount-1] - round(float(df2['Close'][(counter+internalcounter)]),2))/round(float(df2['Close'][(counter+internalcounter)]),2)*100 + small
+                                                smallcounter = smallcounter + 1
+                                    internalcounter = internalcounter + 1
+                                internalcounter = 0
         counter = counter + 1
     TYPValue = TYPValue / (days)
     outputlist.append(("The last buy date is: ", dates[len(dates)-1]))
@@ -371,7 +408,7 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
                         if abs(df2['MACD'][days-1]) > abs(df2['MACD'][days-2]):
                             outputlist.append("--- BIG BUY ---")
         if factor == 'bitch':  
-            bloop = FibonacciGrapher(CompanyCode, dates, homie, selldate, scost, selldate1, scost1)
+            bloop = FibonacciGrapher(CompanyCode, dates, homie, selldate, scost, selldate1, scost1,BBUY, BBUYDate)
             return bloop
         else:
             return outputlist
@@ -409,7 +446,7 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
                         if abs(df2['MACD'][days-1]) > abs(df2['MACD'][days-2]):
                             outputlist.append("--- BIG BUY ---")
     if factor == 'bitch': 
-        bloop = FibonacciGrapher(CompanyCode, dates, homie, selldate, scost, selldate1, scost1)
+        bloop = FibonacciGrapher(CompanyCode, dates, homie, selldate, scost, selldate1, scost1,BBUY, BBUYDate)
         return bloop
     else:
         return outputlist

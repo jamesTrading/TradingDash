@@ -296,7 +296,7 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
                             if signal > signalinput:
                                 tendies.append(round((maxValnear[sharecount-1] - round(float(df2['Close'][(counter)]),2))/round(float(df2['Close'][(counter)]),2),3))
                                 dates.append(df2.index.date[counter])
-                                homie.append(round(float(df2['Close'][counter]),2))
+                                homie.append(round(float(df2['Close'][counter]),3))
                                 MFItracker.append(df2['MFI'][counter])
                                 if (counter + 1) == days:
                                     costbases = costbases + round(float(df2['Close'][(counter)]),2)
@@ -322,9 +322,9 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
                                         if (df2['Close'][counter+internalcounter]-df2['Close'][counter])/df2['Close'][counter] < -0.04:
                                             tendies.append(round((maxValnear[sharecount-1] - round(float(df2['Close'][(counter+internalcounter)]),2))/round(float(df2['Close'][(counter+internalcounter)]),2),3))
                                             dates.append(df2.index.date[counter+internalcounter])
-                                            homie.append(round(float(df2['Close'][counter+internalcounter]),2))
+                                            homie.append(round(float(df2['Close'][counter+internalcounter]),3))
                                             MFItracker.append(df2['MFI'][counter+internalcounter])
-                                            BBUY.append(round(float(df2['Close'][counter+internalcounter]),2))
+                                            BBUY.append(round(float(df2['Close'][counter+internalcounter]),3))
                                             BBUYDate.append(df2.index.date[counter+internalcounter])
                                             costbases = costbases + round(float(df2['Close'][(counter+internalcounter)]),2)
                                             sharecount = sharecount + 1
@@ -361,7 +361,7 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
                 if (df2['MACD'][sellcounter-1]) > (df2['Signal Line'][sellcounter-1]):
                     if abs((df2['MACD'][sellcounter-1] - df2['Signal Line'][sellcounter-1])) < abs((df2['MACD'][sellcounter-2] - df2['Signal Line'][sellcounter-2])):
                         selldate.append(df2.index.date[sellcounter])
-                        scost.append(round(float(df2['Close'][sellcounter]),2))
+                        scost.append(round(float(df2['Close'][sellcounter]),3))
                         sprice = sprice + round(float(df2['Close'][(sellcounter + 1)]),2)
                         scount = scount + 1
         sellcounter = sellcounter + 1
@@ -377,7 +377,7 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
                 if (df2['MACD'][sellcounter-1]) > (df2['Signal Line'][sellcounter-1]):
                     if df2['MACD'][sellcounter] < df2['Signal Line'][sellcounter]:
                         selldate1.append(df2.index.date[sellcounter])
-                        scost1.append(round(float(df2['Close'][sellcounter]),2))
+                        scost1.append(round(float(df2['Close'][sellcounter]),3))
                         sprice1 = sprice1 + round(float(df2['Close'][(sellcounter + 1)]),2)
                         scount1 = scount1 + 1
         sellcounter = sellcounter + 1

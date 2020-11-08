@@ -135,6 +135,7 @@ def FibonacciGrapher(CompanyCode, dates, homie, selldate, scost,selldate1, scost
         fig.add_trace(go.Scatter(x=df4['Dates'],y=df4['SellPrice1'], mode = 'markers',marker=dict(size=12, color="Yellow"),showlegend=False))
         sellloop = sellloop + 1
     fig.update_xaxes(dtick="M2",tickformat="%d\n%b\n%Y")
+    fig.add_trace(go.Scatter(x=df1.index,y=df1['LMA'], mode = 'lines',marker=dict(size=1, color="orange"),showlegend=False))
     fig.add_trace(go.Scatter(x=df1.index,y=df1['HFib'], mode = 'lines',marker=dict(size=1, color="purple"),showlegend=False))
     fig.add_trace(go.Scatter(x=df1.index,y=df1['HFib2'], mode = 'lines',marker=dict(size=1, color="purple"),showlegend=False))
     fig.add_trace(go.Scatter(x=df1.index,y=df1['High3'], mode = 'lines',marker=dict(size=1, color="purple"),showlegend=False))
@@ -296,7 +297,7 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
                             if signal > signalinput:
                                 tendies.append(round((maxValnear[sharecount-1] - round(float(df2['Close'][(counter)]),2))/round(float(df2['Close'][(counter)]),2),3))
                                 dates.append(df2.index.date[counter])
-                                homie.append(round(float(df2['Close'][counter]),3))
+                                homie.append(round(float(df2['Close'][counter]),2))
                                 MFItracker.append(df2['MFI'][counter])
                                 if (counter + 1) == days:
                                     costbases = costbases + round(float(df2['Close'][(counter)]),2)
@@ -322,9 +323,9 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
                                         if (df2['Close'][counter+internalcounter]-df2['Close'][counter])/df2['Close'][counter] < -0.04:
                                             tendies.append(round((maxValnear[sharecount-1] - round(float(df2['Close'][(counter+internalcounter)]),2))/round(float(df2['Close'][(counter+internalcounter)]),2),3))
                                             dates.append(df2.index.date[counter+internalcounter])
-                                            homie.append(round(float(df2['Close'][counter+internalcounter]),3))
+                                            homie.append(round(float(df2['Close'][counter+internalcounter]),2))
                                             MFItracker.append(df2['MFI'][counter+internalcounter])
-                                            BBUY.append(round(float(df2['Close'][counter+internalcounter]),3))
+                                            BBUY.append(round(float(df2['Close'][counter+internalcounter]),2))
                                             BBUYDate.append(df2.index.date[counter+internalcounter])
                                             costbases = costbases + round(float(df2['Close'][(counter+internalcounter)]),2)
                                             sharecount = sharecount + 1
@@ -361,7 +362,7 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
                 if (df2['MACD'][sellcounter-1]) > (df2['Signal Line'][sellcounter-1]):
                     if abs((df2['MACD'][sellcounter-1] - df2['Signal Line'][sellcounter-1])) < abs((df2['MACD'][sellcounter-2] - df2['Signal Line'][sellcounter-2])):
                         selldate.append(df2.index.date[sellcounter])
-                        scost.append(round(float(df2['Close'][sellcounter]),3))
+                        scost.append(round(float(df2['Close'][sellcounter]),2))
                         sprice = sprice + round(float(df2['Close'][(sellcounter + 1)]),2)
                         scount = scount + 1
         sellcounter = sellcounter + 1
@@ -377,7 +378,7 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
                 if (df2['MACD'][sellcounter-1]) > (df2['Signal Line'][sellcounter-1]):
                     if df2['MACD'][sellcounter] < df2['Signal Line'][sellcounter]:
                         selldate1.append(df2.index.date[sellcounter])
-                        scost1.append(round(float(df2['Close'][sellcounter]),3))
+                        scost1.append(round(float(df2['Close'][sellcounter]),2))
                         sprice1 = sprice1 + round(float(df2['Close'][(sellcounter + 1)]),2)
                         scount1 = scount1 + 1
         sellcounter = sellcounter + 1
@@ -553,6 +554,62 @@ def MoneyFlowIndex(selected_dropdown_value):
     return fig
 
 
+def ReturnCalculator(selected_dropdown_value):
+    outputlist = []
+    CompanyCode = selected_dropdown_value
+    outputlist.append(('The returns (div incl) - '+ CompanyCode))
+    try:
+        stocktoday = pdr.get_data_yahoo(CompanyCode,start=date.today(), end=date.today())
+    except KeyError:
+        stocktoday = pdr.get_data_yahoo(CompanyCode,start=(datetime.datetime.now() - datetime.timedelta(days=2)), end=(datetime.datetime.now() - datetime.timedelta(days=2)))
+    try:
+        stock30 = pdr.get_data_yahoo(CompanyCode,start=(datetime.datetime.now() - datetime.timedelta(days=30)), end=(datetime.datetime.now() - datetime.timedelta(days=30)))
+        outputlist.append(('The 1 Month Return is: ',round((((stocktoday['Adj Close'][0]-stock30['Adj Close'][0])/stock30['Adj Close'][0])*100),2),'%'))
+    except KeyError:
+        stock30 = pdr.get_data_yahoo(CompanyCode,start=(datetime.datetime.now() - datetime.timedelta(days=30+2)), end=(datetime.datetime.now() - datetime.timedelta(days=30+2)))
+        outputlist.append(('The 1 Month Return is: ',round((((stocktoday['Adj Close'][0]-stock30['Adj Close'][0])/stock30['Adj Close'][0])*100),2),'%'))
+    try:
+        stock90 = pdr.get_data_yahoo(CompanyCode,start=(datetime.datetime.now() - datetime.timedelta(days=90)), end=(datetime.datetime.now() - datetime.timedelta(days=90)))
+        outputlist.append(('The 3 Month Return is: ',round((((stocktoday['Adj Close'][0]-stock90['Adj Close'][0])/stock90['Adj Close'][0])*100),2),'%'))
+    except KeyError:
+        stock90 = pdr.get_data_yahoo(CompanyCode,start=(datetime.datetime.now() - datetime.timedelta(days=90+2)), end=(datetime.datetime.now() - datetime.timedelta(days=90+2)))
+        outputlist.append(('The 3 Month Return is: ',round((((stocktoday['Adj Close'][0]-stock90['Adj Close'][0])/stock90['Adj Close'][0])*100),2),'%'))
+    try:
+        stock180 = pdr.get_data_yahoo(CompanyCode,start=(datetime.datetime.now() - datetime.timedelta(days=180)), end=(datetime.datetime.now() - datetime.timedelta(days=180)))
+        outputlist.append(('The 6 Month Return is: ',round((((stocktoday['Adj Close'][0]-stock180['Adj Close'][0])/stock180['Adj Close'][0])*100),2),'%'))
+    except KeyError:
+        stock180 = pdr.get_data_yahoo(CompanyCode,start=(datetime.datetime.now() - datetime.timedelta(days=180+2)), end=(datetime.datetime.now() - datetime.timedelta(days=180+2)))
+        outputlist.append(('The 6 Month Return is: ',round((((stocktoday['Adj Close'][0]-stock180['Adj Close'][0])/stock180['Adj Close'][0])*100),2),'%'))
+    try:
+        stock365 = pdr.get_data_yahoo(CompanyCode,start=(datetime.datetime.now() - datetime.timedelta(days=365)), end=(datetime.datetime.now() - datetime.timedelta(days=365)))
+        outputlist.append(('The 1 Year Return is: ',round((((stocktoday['Adj Close'][0]-stock365['Adj Close'][0])/stock365['Adj Close'][0])*100),2),'%'))
+    except KeyError:
+        try:
+            stock365 = pdr.get_data_yahoo(CompanyCode,start=(datetime.datetime.now() - datetime.timedelta(days=365+2)), end=(datetime.datetime.now() - datetime.timedelta(days=365+2)))
+            outputlist.append(('The 1 Year Return is: ',round((((stocktoday['Adj Close'][0]-stock365['Adj Close'][0])/stock365['Adj Close'][0])*100),2),'%'))
+        except KeyError:
+            outputlist.append('The company is younger than 1 year')
+    try:
+        stock1095 = pdr.get_data_yahoo(CompanyCode,start=(datetime.datetime.now() - datetime.timedelta(days=1095)), end=(datetime.datetime.now() - datetime.timedelta(days=1095)))
+        outputlist.append(('The 3 Year Return is: ',round((((stocktoday['Adj Close'][0]-stock1095['Adj Close'][0])/stock1095['Adj Close'][0])*100),2),'%'))
+    except KeyError:
+        try:
+            stock1095 = pdr.get_data_yahoo(CompanyCode,start=(datetime.datetime.now() - datetime.timedelta(days=1095+2)), end=(datetime.datetime.now() - datetime.timedelta(days=1095+2)))
+            outputlist.append(('The 3 Year Return is: ',round((((stocktoday['Adj Close'][0]-stock1095['Adj Close'][0])/stock1095['Adj Close'][0])*100),2),'%'))
+        except KeyError:
+            outputlist.append('The company is younger than 3 years')
+    try:
+        stock1825 = pdr.get_data_yahoo(CompanyCode,start=(datetime.datetime.now() - datetime.timedelta(days=1825)), end=(datetime.datetime.now() - datetime.timedelta(days=1825)))
+        outputlist.append(('The 5 Year Return is: ',round((((stocktoday['Adj Close'][0]-stock1825['Adj Close'][0])/stock1825['Adj Close'][0])*100),2),'%'))
+    except KeyError:
+        try:
+            stock1825 = pdr.get_data_yahoo(CompanyCode,start=(datetime.datetime.now() - datetime.timedelta(days=1825+2)), end=(datetime.datetime.now() - datetime.timedelta(days=1825+2)))
+            outputlist.append(('The 5 Year Return is: ',round((((stocktoday['Adj Close'][0]-stock1825['Adj Close'][0])/stock1825['Adj Close'][0])*100),2),'%'))
+        except KeyError:
+            outputlist.append('The company is younger than 5 years')
+    return outputlist
+    
+
 #this creates the app -- imports the stylesheet
 app = dash.Dash(__name__)
 server = app.server
@@ -589,7 +646,14 @@ app.layout = html.Div([
     html.Div([
         dcc.Graph(id='mfi-graph')
         
-        ],style={'width': '50%', 'float': 'right','display': 'inline-block'})
+        ],style={'width': '50%', 'float': 'right','display': 'inline-block'}),
+
+    html.Div([
+        html.H4('Returns'),
+        html.Table(id = 'my-returns')
+        
+        ],style={'width': '20%', 'float': 'left','display': 'inline-block','border':'solid', 'padding-left':'5%','padding-bottom':'2%'})
+
 ])
 
 #This app callback updates the graph as per the relevant company
@@ -615,6 +679,13 @@ def update_macd(selected_dropdown_value):
 def update_mfi(selected_dropdown_value):
     fig = MoneyFlowIndex(selected_dropdown_value)
     return fig
+
+# for the output-list
+@app.callback(Output('my-returns', 'children'), [Input('input', 'value')])
+def generate_output_list(selected_dropdown_value):
+    outputlist = ReturnCalculator(selected_dropdown_value)
+    # Header
+    return [html.Tr(html.Th('Returns of Product'))] + [html.Tr(html.Td(output)) for output in outputlist]
 
 if __name__ == '__main__':
     app.run_server(debug=True)

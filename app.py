@@ -561,7 +561,7 @@ def ReturnCalculator(selected_dropdown_value):
     try:
         stocktoday = pdr.get_data_yahoo(CompanyCode,start=date.today(), end=date.today())
     except KeyError:
-        stocktoday = pdr.get_data_yahoo(CompanyCode,start=(datetime.datetime.now() - datetime.timedelta(days=2)), end=(datetime.datetime.now() - datetime.timedelta(days=2)))
+        stocktoday = pdr.get_data_yahoo(CompanyCode,start=(datetime.datetime.now() - datetime.timedelta(days=3)), end=(datetime.datetime.now() - datetime.timedelta(days=3)))
     try:
         stock30 = pdr.get_data_yahoo(CompanyCode,start=(datetime.datetime.now() - datetime.timedelta(days=30)), end=(datetime.datetime.now() - datetime.timedelta(days=30)))
         outputlist.append(('The 1 Month Return is: ',round((((stocktoday['Adj Close'][0]-stock30['Adj Close'][0])/stock30['Adj Close'][0])*100),2),'%'))

@@ -18,7 +18,6 @@ def FibonacciGrapher(CompanyCode, dates, homie, selldate, scost,selldate1, scost
     CompanyCode = CompanyCode
     x = 0
     y = 0
-    buyloop = 0
     w = 0
     differenceidentify = 0
     count = 125
@@ -115,25 +114,14 @@ def FibonacciGrapher(CompanyCode, dates, homie, selldate, scost,selldate1, scost
     else:
         king = ('US Market - '+ CompanyCode)
     fig = px.line(df1, x=df1.index, y="Close", title=king, width=1000, height = 700)
-    while buyloop < len(homie):
-        df2 = pd.DataFrame(data = {'Dates':dates,'BuyPrice':homie})
-        fig.add_trace(go.Scatter(x=df2['Dates'],y=df2['BuyPrice'], mode = 'markers',marker=dict(size=12, color="lightgreen"),showlegend=False))
-        buyloop = buyloop + 1
-    buyloop = 0
-    while buyloop < len(BBUY):
-        df2 = pd.DataFrame(data = {'Dates':BBUYDate,'BuyPrice':BBUY})
-        fig.add_trace(go.Scatter(x=df2['Dates'],y=df2['BuyPrice'], mode = 'markers',marker=dict(size=12, color="green"),showlegend=False))
-        buyloop = buyloop + 1
-    sellloop = 0
-    while sellloop <  len(scost):
-        df3 = pd.DataFrame(data = {'Dates':selldate,'SellPrice':scost})
-        fig.add_trace(go.Scatter(x=df3['Dates'],y=df3['SellPrice'], mode = 'markers',marker=dict(size=12, color="Red"),showlegend=False))
-        sellloop = sellloop + 1
-    sellloop = 0
-    while sellloop <  len(scost1):
-        df4 = pd.DataFrame(data = {'Dates':selldate1,'SellPrice1':scost1})
-        fig.add_trace(go.Scatter(x=df4['Dates'],y=df4['SellPrice1'], mode = 'markers',marker=dict(size=12, color="Yellow"),showlegend=False))
-        sellloop = sellloop + 1
+    df2 = pd.DataFrame(data = {'Dates':dates,'BuyPrice':homie})
+    fig.add_trace(go.Scatter(x=df2['Dates'],y=df2['BuyPrice'], mode = 'markers',marker=dict(size=12, color="lightgreen"),showlegend=False))
+    df2 = pd.DataFrame(data = {'Dates':BBUYDate,'BuyPrice':BBUY})
+    fig.add_trace(go.Scatter(x=df2['Dates'],y=df2['BuyPrice'], mode = 'markers',marker=dict(size=12, color="green"),showlegend=False))
+    df3 = pd.DataFrame(data = {'Dates':selldate,'SellPrice':scost})
+    fig.add_trace(go.Scatter(x=df3['Dates'],y=df3['SellPrice'], mode = 'markers',marker=dict(size=12, color="Red"),showlegend=False))
+    df4 = pd.DataFrame(data = {'Dates':selldate1,'SellPrice1':scost1})
+    fig.add_trace(go.Scatter(x=df4['Dates'],y=df4['SellPrice1'], mode = 'markers',marker=dict(size=12, color="Yellow"),showlegend=False))
     fig.update_xaxes(dtick="M2",tickformat="%d\n%b\n%Y")
     fig.add_trace(go.Scatter(x=df1.index,y=df1['LMA'], mode = 'lines',marker=dict(size=1, color="orange"),showlegend=False))
     fig.add_trace(go.Scatter(x=df1.index,y=df1['HFib'], mode = 'lines',marker=dict(size=1, color="purple"),showlegend=False))

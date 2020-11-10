@@ -673,7 +673,7 @@ def update_mfi(selected_dropdown_value):
 def generate_output_list(selected_dropdown_value):
     outputlist = ReturnCalculator(selected_dropdown_value)
     # Header
-    return [html.Tr(html.Th('Returns of Product'))] + [html.Tr(html.Td(output)) for output in outputlist]
+    return [html.Tr(html.Th('Returns of Product (Overall)'))] + [html.Tr(html.Td(output)) for output in outputlist]
 
 if __name__ == '__main__':
     app.run_server(debug=True)

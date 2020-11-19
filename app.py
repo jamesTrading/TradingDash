@@ -549,49 +549,50 @@ def ReturnCalculator(selected_dropdown_value):
     try:
         stocktoday = pdr.get_data_yahoo(CompanyCode,start=date.today(), end=date.today())
     except KeyError:
-        stocktoday = pdr.get_data_yahoo(CompanyCode,start=(datetime.datetime.now() - datetime.timedelta(days=3)), end=(datetime.datetime.now() - datetime.timedelta(days=3)))
+        stocktoday = pdr.get_data_yahoo(CompanyCode,start=(date.today() - datetime.timedelta(days=3)), end=(date.today() - datetime.timedelta(days=3)))
     try:
-        stock30 = pdr.get_data_yahoo(CompanyCode,start=(datetime.datetime.now() - datetime.timedelta(days=30)), end=(datetime.datetime.now() - datetime.timedelta(days=30)))
+        stock30 = pdr.get_data_yahoo(CompanyCode,start=(date.today() - datetime.timedelta(days=30)), end=(date.today() - datetime.timedelta(days=30)))
         outputlist.append(('The 1 Month Return is: ',round((((stocktoday['Adj Close'][0]-stock30['Adj Close'][0])/stock30['Adj Close'][0])*100),2),'%'))
     except KeyError:
-        stock30 = pdr.get_data_yahoo(CompanyCode,start=(datetime.datetime.now() - datetime.timedelta(days=30+2)), end=(datetime.datetime.now() - datetime.timedelta(days=30+2)))
+        print('fuck')
+        stock30 = pdr.get_data_yahoo(CompanyCode,start=(date.today() - datetime.timedelta(days=30+3)), end=(date.today() - datetime.timedelta(days=30+3)))
         outputlist.append(('The 1 Month Return is: ',round((((stocktoday['Adj Close'][0]-stock30['Adj Close'][0])/stock30['Adj Close'][0])*100),2),'%'))
     try:
-        stock90 = pdr.get_data_yahoo(CompanyCode,start=(datetime.datetime.now() - datetime.timedelta(days=90)), end=(datetime.datetime.now() - datetime.timedelta(days=90)))
+        stock90 = pdr.get_data_yahoo(CompanyCode,start=(date.today() - datetime.timedelta(days=90)), end=(date.today() - datetime.timedelta(days=90)))
         outputlist.append(('The 3 Month Return is: ',round((((stocktoday['Adj Close'][0]-stock90['Adj Close'][0])/stock90['Adj Close'][0])*100),2),'%'))
     except KeyError:
-        stock90 = pdr.get_data_yahoo(CompanyCode,start=(datetime.datetime.now() - datetime.timedelta(days=90+2)), end=(datetime.datetime.now() - datetime.timedelta(days=90+2)))
+        stock90 = pdr.get_data_yahoo(CompanyCode,start=(date.today() - datetime.timedelta(days=90+2)), end=(date.today() - datetime.timedelta(days=90+2)))
         outputlist.append(('The 3 Month Return is: ',round((((stocktoday['Adj Close'][0]-stock90['Adj Close'][0])/stock90['Adj Close'][0])*100),2),'%'))
     try:
-        stock180 = pdr.get_data_yahoo(CompanyCode,start=(datetime.datetime.now() - datetime.timedelta(days=180)), end=(datetime.datetime.now() - datetime.timedelta(days=180)))
+        stock180 = pdr.get_data_yahoo(CompanyCode,start=(date.today() - datetime.timedelta(days=180)), end=(date.today() - datetime.timedelta(days=180)))
         outputlist.append(('The 6 Month Return is: ',round((((stocktoday['Adj Close'][0]-stock180['Adj Close'][0])/stock180['Adj Close'][0])*100),2),'%'))
     except KeyError:
-        stock180 = pdr.get_data_yahoo(CompanyCode,start=(datetime.datetime.now() - datetime.timedelta(days=180+2)), end=(datetime.datetime.now() - datetime.timedelta(days=180+2)))
+        stock180 = pdr.get_data_yahoo(CompanyCode,start=(date.today() - datetime.timedelta(days=180+2)), end=(date.today() - datetime.timedelta(days=180+2)))
         outputlist.append(('The 6 Month Return is: ',round((((stocktoday['Adj Close'][0]-stock180['Adj Close'][0])/stock180['Adj Close'][0])*100),2),'%'))
     try:
-        stock365 = pdr.get_data_yahoo(CompanyCode,start=(datetime.datetime.now() - datetime.timedelta(days=365)), end=(datetime.datetime.now() - datetime.timedelta(days=365)))
+        stock365 = pdr.get_data_yahoo(CompanyCode,start=(date.today() - datetime.timedelta(days=365)), end=(date.today() - datetime.timedelta(days=365)))
         outputlist.append(('The 1 Year Return is: ',round((((stocktoday['Adj Close'][0]-stock365['Adj Close'][0])/stock365['Adj Close'][0])*100),2),'%'))
     except KeyError:
         try:
-            stock365 = pdr.get_data_yahoo(CompanyCode,start=(datetime.datetime.now() - datetime.timedelta(days=365+2)), end=(datetime.datetime.now() - datetime.timedelta(days=365+2)))
+            stock365 = pdr.get_data_yahoo(CompanyCode,start=(date.today() - datetime.timedelta(days=365+2)), end=(date.today() - datetime.timedelta(days=365+2)))
             outputlist.append(('The 1 Year Return is: ',round((((stocktoday['Adj Close'][0]-stock365['Adj Close'][0])/stock365['Adj Close'][0])*100),2),'%'))
         except KeyError:
             outputlist.append('The company is younger than 1 year')
     try:
-        stock1095 = pdr.get_data_yahoo(CompanyCode,start=(datetime.datetime.now() - datetime.timedelta(days=1095)), end=(datetime.datetime.now() - datetime.timedelta(days=1095)))
+        stock1095 = pdr.get_data_yahoo(CompanyCode,start=(date.today() - datetime.timedelta(days=1095)), end=(date.today() - datetime.timedelta(days=1095)))
         outputlist.append(('The 3 Year Return is: ',round((((stocktoday['Adj Close'][0]-stock1095['Adj Close'][0])/stock1095['Adj Close'][0])*100),2),'%'))
     except KeyError:
         try:
-            stock1095 = pdr.get_data_yahoo(CompanyCode,start=(datetime.datetime.now() - datetime.timedelta(days=1095+2)), end=(datetime.datetime.now() - datetime.timedelta(days=1095+2)))
+            stock1095 = pdr.get_data_yahoo(CompanyCode,start=(date.today() - datetime.timedelta(days=1095+2)), end=(date.today() - datetime.timedelta(days=1095+2)))
             outputlist.append(('The 3 Year Return is: ',round((((stocktoday['Adj Close'][0]-stock1095['Adj Close'][0])/stock1095['Adj Close'][0])*100),2),'%'))
         except KeyError:
             outputlist.append('The company is younger than 3 years')
     try:
-        stock1825 = pdr.get_data_yahoo(CompanyCode,start=(datetime.datetime.now() - datetime.timedelta(days=1825)), end=(datetime.datetime.now() - datetime.timedelta(days=1825)))
+        stock1825 = pdr.get_data_yahoo(CompanyCode,start=(date.today() - datetime.timedelta(days=1825)), end=(date.today() - datetime.timedelta(days=1825)))
         outputlist.append(('The 5 Year Return is: ',round((((stocktoday['Adj Close'][0]-stock1825['Adj Close'][0])/stock1825['Adj Close'][0])*100),2),'%'))
     except KeyError:
         try:
-            stock1825 = pdr.get_data_yahoo(CompanyCode,start=(datetime.datetime.now() - datetime.timedelta(days=1825+2)), end=(datetime.datetime.now() - datetime.timedelta(days=1825+2)))
+            stock1825 = pdr.get_data_yahoo(CompanyCode,start=(date.today() - datetime.timedelta(days=1825+2)), end=(date.today() - datetime.timedelta(days=1825+2)))
             outputlist.append(('The 5 Year Return is: ',round((((stocktoday['Adj Close'][0]-stock1825['Adj Close'][0])/stock1825['Adj Close'][0])*100),2),'%'))
         except KeyError:
             outputlist.append('The company is younger than 5 years')

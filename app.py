@@ -13,6 +13,122 @@ import math
 import plotly.graph_objects as go
 import plotly
 
+def Fundamentals(selected_dropdown_value):
+    CompanyCode = selected_dropdown_value
+    try:
+        stocktoday = pdr.get_data_yahoo(CompanyCode,start=date.today(), end=date.today())
+    except KeyError:
+        stocktoday = pdr.get_data_yahoo(CompanyCode,start=(datetime.datetime.now() - datetime.timedelta(days=2)), end=(datetime.datetime.now() - datetime.timedelta(days=2)))
+    CurrentPrice = stocktoday['Close'][0]
+    
+    urlcashflow = 'https://www.finance.yahoo.com/quote/'+CompanyCode+'/cash-flow?p='+CompanyCode
+    cashsoup = BeautifulSoup((requests.get(urlcashflow).text),"lxml")
+
+    urlincome = 'https://www.finance.yahoo.com/quote/'+CompanyCode+'/financials?p='+CompanyCode
+    incomesoup = BeautifulSoup((requests.get(urlincome).text),"lxml")
+
+    urlbalancesheet = 'https://www.finance.yahoo.com/quote/'+CompanyCode+'/balance-sheet?p='+CompanyCode
+    balancesoup = BeautifulSoup((requests.get(urlbalancesheet).text),"lxml")
+    
+    titleBalancesheet = balancesoup.findAll('div', {'class': "D(tbc) Ta(start) Pend(15px)--mv2 Pend(10px) Bxz(bb) Py(8px) Bdends(s) Bdbs(s) Bdstarts(s) Bdstartw(1px) Bdbw(1px) Bdendw(1px) Bdc($seperatorColor) Pos(st) Start(0) Bgc($lv2BgColor) fi-row:h_Bgc($hoverBgColor) Pstart(15px)--mv2 Pstart(10px)"})
+    for title in titleBalancesheet:
+        if 'Common Stock Equity' in title.text:
+            shareholderequity = ([div.text for div in title.findNextSiblings(attrs={'data-test': 'fin-col'})])
+            shareholderequity = [int(item.replace(',','')) for item in shareholderequity]
+        if 'Total Liabilities Net Minority Interest' in title.text:
+            Liability = ([div.text for div in title.findNextSiblings(attrs={'data-test': 'fin-col'})])
+            Liability = [int(item.replace(',','')) for item in Liability]
+        if 'Total Assets' in title.text:
+            totalassets = ([div.text for div in title.findNextSiblings(attrs={'data-test': 'fin-col'})])
+            totalassets = [int(item.replace(',','')) for item in totalassets]
+        if 'Ordinary Shares Number' in title.text:
+            Sharecount = ([div.text for div in title.findNextSiblings(attrs={'data-test': 'fin-col'})])
+            Sharecount = [int(item.replace(',','')) for item in Sharecount]
+
+    titleFinancial = incomesoup.findAll('div', {'class': "D(tbc) Ta(start) Pend(15px)--mv2 Pend(10px) Bxz(bb) Py(8px) Bdends(s) Bdbs(s) Bdstarts(s) Bdstartw(1px) Bdbw(1px) Bdendw(1px) Bdc($seperatorColor) Pos(st) Start(0) Bgc($lv2BgColor) fi-row:h_Bgc($hoverBgColor) Pstart(15px)--mv2 Pstart(10px)"})
+    for title in titleFinancial:
+        if 'Normalized EBITDA' in title.text:
+            EBITDA = ([div.text for div in title.findNextSiblings(attrs={'data-test': 'fin-col'})])
+            EBITDA.pop(0)
+            EBITDA = [int(item.replace(',','')) for item in EBITDA]
+        if 'Net Income Common Stockholders' in title.text:
+            NetIncome = ([div.text for div in title.findNextSiblings(attrs={'data-test': 'fin-col'})])
+            NetIncome.pop(0)
+            NetIncome = [int(item.replace(',','')) for item in NetIncome]
+            
+    titleCashflow = cashsoup.findAll('div', {'class': "D(tbc) Ta(start) Pend(15px)--mv2 Pend(10px) Bxz(bb) Py(8px) Bdends(s) Bdbs(s) Bdstarts(s) Bdstartw(1px) Bdbw(1px) Bdendw(1px) Bdc($seperatorColor) Pos(st) Start(0) Bgc($lv2BgColor) fi-row:h_Bgc($hoverBgColor) Pstart(15px)--mv2 Pstart(10px)"})
+    for title in titleCashflow:
+        if 'Operating Cash Flow' in title.text:
+            OperatingCashflow2 = ([div.text for div in title.findNextSiblings(attrs={'data-test': 'fin-col'})])
+            OperatingCashflow2.pop(0)
+            if OperatingCashflow2[0] == '-':
+                OperatingCashflow2 = ['-' for item in OperatingCashflow2]
+            else:
+                OperatingCashflow2 = [int(item.replace(',','')) for item in OperatingCashflow2]
+        if 'Cash Flows from Used in Operating Activities Direct' in title.text:
+            OperatingCashflow1 = ([div.text for div in title.findNextSiblings(attrs={'data-test': 'fin-col'})])
+            OperatingCashflow1.pop(0)
+            OperatingCashflow1 = [int(item.replace(',','')) for item in OperatingCashflow1]
+        if 'Free Cash Flow' in title.text:
+            FreeCashflow = ([div.text for div in title.findNextSiblings(attrs={'data-test': 'fin-col'})])
+            FreeCashflow.pop(0)
+            FreeCashflow = [int(item.replace(',','')) for item in FreeCashflow]
+    EPS = []
+    y = 0
+    OperatingCashflow = []
+    try:
+        if OperatingCashflow2[0] == '-':
+            OperatingCashflow = OperatingCashflow1
+        else:
+            OperatingCashflow = OperatingCashflow2
+    except:
+        OperatingCashflow = OperatingCashflow1
+    for element in NetIncome:
+        EPS.append(round(element/Sharecount[y],3))
+        y = y + 1
+    x = 0
+    EPSGrowth = []
+    ROE = []
+    ROA = []
+    DTE = []
+    while x < (len(EPS)-1):
+        percent = ((EPS[x]-EPS[x+1])/EPS[x+1])*100
+        EPSGrowth.append((round(percent,3) , '%'))
+        x = x + 1
+    EPSGrowth.append('-')
+    z = 0
+    EBITDAGrowth = []
+    a = len(Liability) - 1
+    while a >= 0:
+        if a == len(NetIncome):
+            ROE.append(round(NetIncome[a-1]/shareholderequity[a],3))
+            ROA.append(round(NetIncome[a-1]/totalassets[a],3))
+            DTE.append(round(Liability[a]/shareholderequity[a],3))
+        else:
+            ROE.append(round(NetIncome[a]/shareholderequity[a],3))
+            ROA.append(round(NetIncome[a]/totalassets[a],3))
+            DTE.append(round(Liability[a]/shareholderequity[a],3))
+        a = a - 1
+    try:
+        len(EBITDA)
+        while z < (len(EBITDA)-1):
+            EbitPercent = ((EBITDA[z]-EBITDA[z+1])/EBITDA[z+1])*100
+            EBITDAGrowth.append((round(EbitPercent,3) , '%'))
+            z = z + 1
+        EBITDAGrowth.append('-')
+    except:
+        while z < len(EPS):
+            EBITDAGrowth.append('N/A')
+            z = z + 1
+    big = len(Liability)
+    dex = []
+    while big > 0:
+        dex.append(date.today().year-big+1)
+        big = big - 1
+    df = pd.DataFrame({'Date': dex, 'EPS': list(reversed(EPS)), 'EPS Growth': list(reversed(EPSGrowth)), 'Net Income': list(reversed(NetIncome)),'ROE': ROE, 'ROA': ROA,'Debt to Equity':DTE, 'Shareholder Equity': list(reversed(shareholderequity)),
+                       'Shares':list(reversed(Sharecount)),'Operating Cashflow': list(reversed(OperatingCashflow)), 'Free Cashflow': list(reversed(FreeCashflow)), 'EBITDA Growth': list(reversed(EBITDAGrowth))},index=range(date.today().year-len(Liability)+1,date.today().year+1))
+    return df
+
 #This is the part of the code that takes buy points and displays them
 def FibonacciGrapher(CompanyCode, dates, homie, selldate, scost,selldate1, scost1,BBUY, BBUYDate): 
     CompanyCode = CompanyCode
@@ -641,7 +757,12 @@ app.layout = html.Div([
         html.H4('Returns'),
         html.Table(id = 'my-returns')
         
-        ],style={'width': '20%', 'float': 'left','display': 'inline-block','border':'solid', 'padding-left':'5%','padding-bottom':'2%'})
+        ],style={'width': '20%', 'float': 'left','display': 'inline-block','border':'solid', 'padding-left':'5%','padding-bottom':'2%'}),
+    html.Div([
+        html.H4('Fundamentals'),
+        html.Table(id = 'my-fundamentals')
+        
+        ],style={'width': '70%', 'float': 'right','display': 'inline-block','border':'solid', 'padding-right':'2%','padding-bottom':'2%'})
 
 ])
 
@@ -675,6 +796,14 @@ def generate_output_list(selected_dropdown_value):
     outputlist = ReturnCalculator(selected_dropdown_value)
     # Header
     return [html.Tr(html.Th('Returns of Product (Overall)'))] + [html.Tr(html.Td(output)) for output in outputlist]
+
+# for the fundamentals table
+@app.callback(Output('my-fundamentals', 'children'), [Input('input', 'value')])
+def generate_fundamentaltable(selected_dropdown_value):
+    table = Fundamentals(selected_dropdown_value)
+    print(table)
+    # Header
+    return [html.Tr([html.Th(col) for col in table.columns])] + [html.Tr([html.Td(table.iloc[i][col]) for col in table.columns]) for i in range(0,len(table.EPS))]
 
 if __name__ == '__main__':
     app.run_server(debug=True)

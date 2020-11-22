@@ -804,7 +804,7 @@ def generate_fundamentaltable(selected_dropdown_value):
     table = Fundamentals(selected_dropdown_value)
     print(table)
     # Header
-    return [html.Tr([html.Th(col) for col in table.columns])] + [html.Tr([html.Td(table.iloc[i][col]) for col in table.columns]) for i in range(0,len(table.EPS))]
+    return html.Table([html.Tr([html.Th(col) for col in table.columns])] + [html.Tr([html.Td(table.iloc[i][col]) for col in table.columns]) for i in range(0,len(table.EPS))],style={'border-spacing': '13px'})
 
 if __name__ == '__main__':
     app.run_server(debug=True)

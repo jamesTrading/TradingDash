@@ -112,14 +112,10 @@ def Fundamentals(selected_dropdown_value):
         a = a - 1
     try:
         len(EBITDA)
-        while z < (len(EBITDA)-1):
-            EbitPercent = ((EBITDA[z]-EBITDA[z+1])/EBITDA[z+1])*100
-            EBITDAGrowth.append((round(EbitPercent,3) , '%'))
-            z = z + 1
-        EBITDAGrowth.append('-')
     except:
+        EBITDA = []
         while z < len(EPS):
-            EBITDAGrowth.append('N/A')
+            EBITDA.append('N/A')
             z = z + 1
     big = len(Liability)
     dex = []
@@ -127,7 +123,7 @@ def Fundamentals(selected_dropdown_value):
         dex.append(date.today().year-big+1)
         big = big - 1
     df = pd.DataFrame({'Date': dex, 'EPS': list(reversed(EPS)), 'EPS Growth': list(reversed(EPSGrowth)), 'Net Income': list(reversed(NetIncome)),'ROE': ROE, 'ROA': ROA,'Debt to Equity':DTE, 'Shareholder Equity': list(reversed(shareholderequity)),
-                       'Shares':list(reversed(Sharecount)),'Operating Cashflow': list(reversed(OperatingCashflow)), 'Free Cashflow': list(reversed(FreeCashflow)), 'EBITDA Growth': list(reversed(EBITDAGrowth))},index=range(date.today().year-len(Liability)+1,date.today().year+1))
+                       'Shares':list(reversed(Sharecount)),'Operating Cashflow': list(reversed(OperatingCashflow)), 'Free Cashflow': list(reversed(FreeCashflow)), 'EBITDA': list(reversed(EBITDA))},index=range(date.today().year-len(Liability)+1,date.today().year+1))
     return df
 
 #This is the part of the code that takes buy points and displays them

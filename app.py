@@ -122,7 +122,7 @@ def Fundamentals(selected_dropdown_value):
     while big > 0:
         dex.append(date.today().year-big+1)
         big = big - 1
-    df = pd.DataFrame({'Date': dex, 'EPS': list(reversed(EPS)), 'EPS Growth': list(reversed(EPSGrowth)), 'Net Income': list(reversed(NetIncome)),'ROE': ROE, 'ROA': ROA,'Debt to Equity':DTE, 'Shareholder Equity': list(reversed(shareholderequity)),
+    df = pd.DataFrame({CompanyCode: dex, 'EPS': list(reversed(EPS)), 'EPS Growth': list(reversed(EPSGrowth)), 'Net Income': list(reversed(NetIncome)),'ROE': ROE, 'ROA': ROA,'Debt to Equity':DTE, 'Shareholder Equity': list(reversed(shareholderequity)),
                        'Shares':list(reversed(Sharecount)),'Operating Cashflow': list(reversed(OperatingCashflow)), 'Free Cashflow': list(reversed(FreeCashflow)), 'EBITDA': list(reversed(EBITDA))},index=range(date.today().year-len(Liability)+1,date.today().year+1))
     return df
 

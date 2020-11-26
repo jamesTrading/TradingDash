@@ -368,9 +368,9 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
         TYPValue = round(float(df2['Close'][counter]),2) + TYPValue
         if round(float(df2['MFI'][counter]),2) < 30:
             if df2['MACD'][counter] < 0:
-                if (df2['MACD'][counter-1]) < (df2['Signal Line'][counter-1]):
-                    if abs((df2['MACD'][counter-1] - df2['Signal Line'][counter-1])) < abs((df2['MACD'][counter-2] - df2['Signal Line'][counter-2])):
-                        if abs(df2['MACD'][counter-1]) > abs(df2['MACD'][counter-2]):
+                if (df2['MACD'][counter]) < (df2['Signal Line'][counter]):
+                    if abs((df2['MACD'][counter] - df2['Signal Line'][counter])) < abs((df2['MACD'][counter-1] - df2['Signal Line'][counter-1])):
+                        if abs(df2['MACD'][counter]) > abs(df2['MACD'][counter-1]):
                             Valnear = df2['Close'][(counter):(counter+90)]
                             maxValnear.append(max(Valnear))
                             maxposition = np.where(Valnear == Valnear.max())

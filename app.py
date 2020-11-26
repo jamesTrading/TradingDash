@@ -447,9 +447,9 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
     TYPValue = TYPValue / (days)
     outputlist.append(("The last buy date is: ", dates[len(dates)-1]))
     outputlist.append(("The last price bought for: $", homie[len(homie)-1]))
+    outputlist.append(("The MFI of the last buy: ", MFItracker[len(MFItracker)-1]))
     outputlist.append(("The expected sell point is: $", round((lastmax[len(lastmax)-1]-lastmin[len(lastmax)-1])*0.618+homie[len(homie)-1],2)))
     outputlist.append(("The expected return on the buy: ", round(((((lastmax[len(lastmax)-1]-lastmin[len(lastmax)-1])*0.618+homie[len(homie)-1]-homie[len(homie)-1])/homie[len(homie)-1])*100),3),"%"))
-    outputlist.append(("The average closeness to the predicted sell point was: ", round((sum(mfucker)/len(mfucker))*100,3),"%"))
     outputlist.append(("The average return on the each buy is: ", round((sum(tendies)/len(tendies))*100,3),"%"))
     sellcounter = 0
     selldate = []

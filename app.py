@@ -27,6 +27,7 @@ def ProfileScraper(selected_dropdown_value):
         
     return companyprofile
 
+
 def Fundamentals(selected_dropdown_value):
     CompanyCode = selected_dropdown_value
     try:
@@ -773,6 +774,7 @@ app.layout = html.Div([
         html.Table(id = 'my-fundamentals')
         
         ],style={'width': '70%', 'float': 'right','display': 'inline-block','border':'solid', 'padding-right':'2%','padding-bottom':'2%'}),
+
     html.Div([
         html.Table(id = 'my-profile')
         

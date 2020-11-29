@@ -14,6 +14,19 @@ import plotly.graph_objects as go
 import plotly
 from bs4 import BeautifulSoup
 
+def ProfileScraper(selected_dropdown_value):
+    CompanyCode = selected_dropdown_value
+    urlprofile = 'https://au.finance.yahoo.com/quote/'+CompanyCode+'/profile?p='+CompanyCode
+    profilesoup = BeautifulSoup((requests.get(urlprofile).text),"lxml")
+
+    companyprofile = []
+    companyprofile.append(CompanyCode)
+    titleProfile = profilesoup.findAll('p', {'class': "Mt(15px) Lh(1.6)"})
+    for title in titleProfile:
+        companyprofile.append(title.text)
+        
+    return companyprofile
+
 def Fundamentals(selected_dropdown_value):
     CompanyCode = selected_dropdown_value
     try:
@@ -759,7 +772,11 @@ app.layout = html.Div([
         html.H4('Fundamentals'),
         html.Table(id = 'my-fundamentals')
         
-        ],style={'width': '70%', 'float': 'right','display': 'inline-block','border':'solid', 'padding-right':'2%','padding-bottom':'2%'})
+        ],style={'width': '70%', 'float': 'right','display': 'inline-block','border':'solid', 'padding-right':'2%','padding-bottom':'2%'}),
+    html.Div([
+        html.Table(id = 'my-profile')
+        
+        ],style={'width': '70%', 'float': 'right','display': 'inline-block','border':'solid', 'padding-right':'2%','padding-bottom':'2%','padding-top':'2%'})
 
 ])
 
@@ -801,6 +818,14 @@ def generate_fundamentaltable(selected_dropdown_value):
     print(table)
     # Header
     return html.Table([html.Tr([html.Th(col) for col in table.columns])] + [html.Tr([html.Td(table.iloc[i][col]) for col in table.columns]) for i in range(0,len(table.EPS))],style={'border-spacing': '13px'})
+
+# for the output-list
+@app.callback(Output('my-profile', 'children'), [Input('input', 'value')])
+def company_profile(selected_dropdown_value):
+    companyprofile = ProfileScraper(selected_dropdown_value)
+    # Header
+    return [html.Tr(html.Th('Company Profile'))] + [html.Tr(html.Td(output)) for output in companyprofile]
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)

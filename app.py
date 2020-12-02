@@ -141,7 +141,7 @@ def Fundamentals(selected_dropdown_value):
     return df
 
 #This is the part of the code that takes buy points and displays them
-def FibonacciGrapher(CompanyCode, dates, homie, selldate, scost,selldate1, scost1,BBUY, BBUYDate): 
+def FibonacciGrapher(CompanyCode, dates, homie, selldate, scost, BBUY, BBUYDate): 
     CompanyCode = CompanyCode
     x = 0
     y = 0
@@ -232,7 +232,7 @@ def FibonacciGrapher(CompanyCode, dates, homie, selldate, scost,selldate1, scost
     df1['HFib2'] = HighValue2
     df1['LFib2'] = LowValue2
     df1['MMA'] = df1.rolling(window=50).mean()['Close']
-    df1['SMA'] = df1.rolling(window=20).mean()['Close']
+    df1['SMA'] = df1.rolling(window=30).mean()['Close']
     df1['LMA'] = df1.rolling(window=100).mean()['Close']
     fig = go.Figure()
     king = 0
@@ -247,10 +247,9 @@ def FibonacciGrapher(CompanyCode, dates, homie, selldate, scost,selldate1, scost
     fig.add_trace(go.Scatter(x=df2['Dates'],y=df2['BuyPrice'], mode = 'markers',marker=dict(size=12, color="green"),showlegend=False))
     df3 = pd.DataFrame(data = {'Dates':selldate,'SellPrice':scost})
     fig.add_trace(go.Scatter(x=df3['Dates'],y=df3['SellPrice'], mode = 'markers',marker=dict(size=12, color="Red"),showlegend=False))
-    df4 = pd.DataFrame(data = {'Dates':selldate1,'SellPrice1':scost1})
-    fig.add_trace(go.Scatter(x=df4['Dates'],y=df4['SellPrice1'], mode = 'markers',marker=dict(size=12, color="Yellow"),showlegend=False))
     fig.update_xaxes(dtick="M2",tickformat="%d\n%b\n%Y")
     fig.add_trace(go.Scatter(x=df1.index,y=df1['LMA'], mode = 'lines',marker=dict(size=1, color="orange"),showlegend=False))
+    fig.add_trace(go.Scatter(x=df1.index,y=df1['SMA'], mode = 'lines',marker=dict(size=1, color="dark grey"),showlegend=False))
     fig.add_trace(go.Scatter(x=df1.index,y=df1['HFib'], mode = 'lines',marker=dict(size=1, color="purple"),showlegend=False))
     fig.add_trace(go.Scatter(x=df1.index,y=df1['HFib2'], mode = 'lines',marker=dict(size=1, color="purple"),showlegend=False))
     fig.add_trace(go.Scatter(x=df1.index,y=df1['High3'], mode = 'lines',marker=dict(size=1, color="purple"),showlegend=False))
@@ -472,30 +471,15 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
     discount = 0
     scount = 0
     while sellcounter < (days - 1):
-        if round(float(df2['MFI'][sellcounter]),2) > 73:
+        if round(float(df2['MFI'][sellcounter]),2) > 75:
             if df2['Signal Line'][sellcounter] > 0:
-                if (df2['MACD'][sellcounter-1]) > (df2['Signal Line'][sellcounter-1]):
-                    if abs((df2['MACD'][sellcounter-1] - df2['Signal Line'][sellcounter-1])) < abs((df2['MACD'][sellcounter-2] - df2['Signal Line'][sellcounter-2])):
+                if (df2['MACD'][sellcounter]) > (df2['Signal Line'][sellcounter]):
+                    if abs((df2['MACD'][sellcounter] - df2['Signal Line'][sellcounter])) < abs((df2['MACD'][sellcounter-1] - df2['Signal Line'][sellcounter-1])):
                         selldate.append(df2.index.date[sellcounter])
                         scost.append(round(float(df2['Close'][sellcounter]),3))
                         sprice = sprice + round(float(df2['Close'][(sellcounter + 1)]),3)
                         scount = scount + 1
-        sellcounter = sellcounter + 1
-    sellcounter = 0
-    selldate1 = []
-    sprice1 = 0
-    scost1 = []
-    discount1 = 0
-    scount1 = 0
-    while sellcounter < (days - 1):
-        if round(float(df2['MFI'][sellcounter]),2) > 73 or round(float(df2['MFI'][sellcounter-1]),2) > 73:
-            if df2['Signal Line'][sellcounter] > 0:
-                if (df2['MACD'][sellcounter-1]) > (df2['Signal Line'][sellcounter-1]):
-                    if df2['MACD'][sellcounter] < df2['Signal Line'][sellcounter]:
-                        selldate1.append(df2.index.date[sellcounter])
-                        scost1.append(round(float(df2['Close'][sellcounter]),3))
-                        sprice1 = sprice1 + round(float(df2['Close'][(sellcounter + 1)]),3)
-                        scount1 = scount1 + 1
+                        sellcounter = sellcounter + 4
         sellcounter = sellcounter + 1
     if sharecount == 0:
         currentprices = round(float(df2['Close'][(days-1)]),2)
@@ -524,7 +508,7 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
                         if abs(df2['MACD'][days-1]) > abs(df2['MACD'][days-2]):
                             outputlist.append("--- BIG BUY ---")
         if factor == 'bitch':  
-            bloop = FibonacciGrapher(CompanyCode, dates, homie, selldate, scost, selldate1, scost1,BBUY, BBUYDate)
+            bloop = FibonacciGrapher(CompanyCode, dates, homie, selldate, scost,BBUY, BBUYDate)
             return bloop
         else:
             return outputlist
@@ -562,7 +546,7 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
                         if abs(df2['MACD'][days-1]) > abs(df2['MACD'][days-2]):
                             outputlist.append("--- BIG BUY ---")
     if factor == 'bitch': 
-        bloop = FibonacciGrapher(CompanyCode, dates, homie, selldate, scost, selldate1, scost1,BBUY, BBUYDate)
+        bloop = FibonacciGrapher(CompanyCode, dates, homie, selldate, scost,BBUY, BBUYDate)
         return bloop
     else:
         return outputlist

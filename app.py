@@ -464,22 +464,24 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
     outputlist.append(("The expected sell point is: $", round((lastmax[len(lastmax)-1]-lastmin[len(lastmax)-1])*0.618+homie[len(homie)-1],2)))
     outputlist.append(("The expected return on the buy: ", round(((((lastmax[len(lastmax)-1]-lastmin[len(lastmax)-1])*0.618+homie[len(homie)-1]-homie[len(homie)-1])/homie[len(homie)-1])*100),3),"%"))
     outputlist.append(("The average return on the each buy is: ", round((sum(tendies)/len(tendies))*100,3),"%"))
-    sellcounter = 0
+    sellcounter = 2
     selldate = []
     sprice = 0
     scost = []
     discount = 0
     scount = 0
-    while sellcounter < (days - 1):
-        if round(float(df2['MFI'][sellcounter]),2) > 75:
+    while sellcounter < (days - 2):
+        if round(float(df2['MFI'][sellcounter]),2) > 75 or round(float(df2['MFI'][sellcounter+1]),2) > 75 or round(float(df2['MFI'][sellcounter+2]),2) > 75:
             if df2['Signal Line'][sellcounter] > 0:
                 if (df2['MACD'][sellcounter]) > (df2['Signal Line'][sellcounter]):
-                    if abs((df2['MACD'][sellcounter] - df2['Signal Line'][sellcounter])) < abs((df2['MACD'][sellcounter-1] - df2['Signal Line'][sellcounter-1])):
-                        selldate.append(df2.index.date[sellcounter])
-                        scost.append(round(float(df2['Close'][sellcounter]),3))
-                        sprice = sprice + round(float(df2['Close'][(sellcounter + 1)]),3)
-                        scount = scount + 1
-                        sellcounter = sellcounter + 4
+                    if (df2['MACD'][sellcounter-1])-(df2['Signal Line'][sellcounter-1]) > (df2['MACD'][sellcounter-2])-(df2['Signal Line'][sellcounter-2]):
+                        if (df2['MACD'][sellcounter]) -(df2['Signal Line'][sellcounter])> (df2['MACD'][sellcounter-1])-(df2['Signal Line'][sellcounter-1]):
+                            if (df2['MACD'][sellcounter+1])-(df2['Signal Line'][sellcounter+1]) < (df2['MACD'][sellcounter]-df2['Signal Line'][sellcounter]):
+                                if (df2['MACD'][sellcounter+2])-(df2['Signal Line'][sellcounter+2]) < (df2['MACD'][sellcounter+1]-df2['Signal Line'][sellcounter+1]):
+                                    selldate.append(df2.index.date[sellcounter+2])
+                                    scost.append(round(float(df2['Close'][sellcounter+2]),3))
+                                    sprice = sprice + round(float(df2['Close'][(sellcounter + 2)]),3)
+                                    scount = scount + 1
         sellcounter = sellcounter + 1
     if sharecount == 0:
         currentprices = round(float(df2['Close'][(days-1)]),2)

@@ -233,7 +233,7 @@ def FibonacciGrapher(CompanyCode, dates, homie, selldate, scost, BBUY, BBUYDate)
     df1['LFib2'] = LowValue2
     df1['MMA'] = df1.rolling(window=50).mean()['Close']
     df1['SMA'] = df1.rolling(window=30).mean()['Close']
-    df1['LMA'] = df1.rolling(window=100).mean()['Close']
+    df1['LMA'] = df1.rolling(window=200).mean()['Close']
     fig = go.Figure()
     king = 0
     if "." in CompanyCode:

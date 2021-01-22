@@ -164,7 +164,7 @@ def FibonacciGrapher(CompanyCode, dates, homie, selldate, scost, BBUY, BBUYDate)
     LowValue2 = []
     LowValue3 = []
     HighValue3 = []
-    stock = pdr.get_data_yahoo(CompanyCode,start=datetime.datetime(2018,1,1), end=date.today())
+    stock = pdr.get_data_yahoo(CompanyCode,start=datetime.datetime(2018,2,2), end=date.today())
     days = stock['Close'].count()
     close_prices = stock['Close']
     df1 = pd.DataFrame(stock, columns=['Close'])
@@ -294,12 +294,12 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
     CompanyCode = selected_dropdown_value
     outputlist = []
     if "." in CompanyCode:
-        market = pdr.get_data_yahoo('^AXJO',start=datetime.datetime(2018,1,1), end=date.today())
+        market = pdr.get_data_yahoo('^AXJO',start=datetime.datetime(2018,2,2), end=date.today())
         outputlist.append(('Australian Market - '+ CompanyCode))
     else:
-        market = pdr.get_data_yahoo('^GSPC',start=datetime.datetime(2018,1,1), end=date.today())
+        market = pdr.get_data_yahoo('^GSPC',start=datetime.datetime(2018,2,2), end=date.today())
         outputlist.append(('US Market - '+ CompanyCode))
-    stock = pdr.get_data_yahoo(CompanyCode,start=datetime.datetime(2018,1,1), end=date.today())
+    stock = pdr.get_data_yahoo(CompanyCode,start=datetime.datetime(2018,2,2), end=date.today())
     days = stock['Close'].count()
     cuck = market['Close'].count()  
     while timer < days:

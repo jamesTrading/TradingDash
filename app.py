@@ -339,7 +339,10 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
         NegRatio = NegRatio + Negative[z]
         z = z + 1
     while z < days:
-        MFR.append((PosRatio/(-1*NegRatio)))
+        try:
+            MFR.append((PosRatio/(-1*NegRatio)))
+        except:
+            MFR.append((PosRatio/(-1*0.00001)))
         PosRatio = PosRatio - Positive[(z - 14)] + Positive[z]
         NegRatio = NegRatio - Negative[(z - 14)] + Negative[z]
         z = z + 1

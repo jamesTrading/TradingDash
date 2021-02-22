@@ -261,7 +261,6 @@ def FibonacciGrapher(CompanyCode, dates, homie, selldate, scost, BBUY, BBUYDate)
     fig.add_trace(go.Scatter(x=df1.index,y=df1['Fib38'], mode = 'lines',marker=dict(size=1, color="orange"),showlegend=False))
     return fig
 
-
 #This is the part of the app for producing the main info and buy/sell points
 def TradingAlgo(selected_dropdown_value, junky, signalinput):
     costbases = 0
@@ -380,6 +379,7 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
     internalcounter = 3
     BBUY = []
     BBUYDate = []
+    toclose = 0
     while counter < (days):
         TYPValue = round(float(df2['Close'][counter]),2) + TYPValue
         if round(float(df2['MFI'][counter]),2) < 30:
@@ -387,11 +387,20 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
                 if (df2['MACD'][counter]) < (df2['Signal Line'][counter]):
                     if abs((df2['MACD'][counter] - df2['Signal Line'][counter])) < abs((df2['MACD'][counter-1] - df2['Signal Line'][counter-1])):
                         if abs(df2['MACD'][counter]) > abs(df2['MACD'][counter-1]):
-                            Valnear = df2['Close'][(counter):(counter+90)]
-                            maxValnear.append(max(Valnear))
-                            maxposition = np.where(Valnear == Valnear.max())
-                            maxposition = maxposition[0][0]
-                            bigposition.append(int(maxposition))
+                            if counter+90>days-1:
+                                toclose = days-counter-1
+                            else:
+                                toclose = 90
+                            Valnear = df2['Close'][(counter):(counter+toclose)]
+                            try:
+                                maxValnear.append(max(Valnear))
+                                maxposition = np.where(Valnear == Valnear.max())
+                                maxposition = maxposition[0][0]
+                            except:
+                                maxValnear.append(df2['Close'][days-1])
+                                maxposition = 0
+                            print(counter+toclose)
+                            bigposition.append(maxposition)
                             if counter < 90:
                                 lastmax.append(max(df2['Close'][(0):(counter)]))
                                 lastmin.append(min(df2['Close'][(0):(counter)]))
@@ -424,7 +433,6 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
                                 bbbcounter = bbbcounter + 1
                                 sharecount = sharecount + 1
                                 trade_return.append(((maxValnear[sharecount-1] - round(float(df2['Close'][(counter)]),3))/round(float(df2['Close'][(counter)]),3))*100)
-                                market_return.append(((df1['Close'][counter+int(maxposition)] - round(float(df1['Close'][(counter)]),3))/round(float(df1['Close'][(counter)]),3))*100)
                                 if df2['Close'][counter] < df2['LMA'][counter]*0.95:
                                     largebuy = (maxValnear[sharecount-1] - round(float(df2['Close'][(counter)]),3))/round(float(df2['Close'][(counter)]),3)*100 + largebuy
                                     largebuycounter = largebuycounter + 1
@@ -555,6 +563,7 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
         return bloop
     else:
         return outputlist
+
     
 def MACD_BuySignal_graphed(selected_dropdown_value):
     CompanyCode = selected_dropdown_value

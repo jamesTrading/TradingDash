@@ -107,7 +107,7 @@ def Fundamentals(selected_dropdown_value):
     ROA = []
     DTE = []
     while x < (len(EPS)-1):
-        percent = ((EPS[x]-EPS[x+1])/EPS[x+1])*100
+        percent = ((EPS[x]-EPS[x+1])/abs(EPS[x+1]))*100
         EPSGrowth.append((round(percent,3) , '%'))
         x = x + 1
     EPSGrowth.append('-')

@@ -167,7 +167,7 @@ def FibonacciGrapher(CompanyCode, dates, homie, selldate, scost, BBUY, BBUYDate)
     stock = pdr.get_data_yahoo(CompanyCode,start=datetime.datetime(2018,2,2), end=date.today())
     days = stock['Close'].count()
     close_prices = stock['Close']
-    df1 = pd.DataFrame(stock, columns=['Close'])
+    df1 = pd.DataFrame(stock, columns=['Close','Open','High','Low'])
     periods = math.floor(days / 100)
     breh = 0
     maxposition = 0
@@ -240,7 +240,8 @@ def FibonacciGrapher(CompanyCode, dates, homie, selldate, scost, BBUY, BBUYDate)
         king = ('Australian Market - '+ CompanyCode)
     else:
         king = ('US Market - '+ CompanyCode)
-    fig = px.line(df1, x=df1.index, y="Close", title=king, width=1000, height = 700)
+    fig = go.Figure(data=[go.Candlestick(x=df1.index,open=df1['Open'],high=df1['High'],low=df1['Low'],close=df1['Close'])])
+    fig.update_layout(xaxis_rangeslider_visible=False, width = 1000, height = 700,title=king, showlegend=False)
     df2 = pd.DataFrame(data = {'Dates':dates,'BuyPrice':homie})
     fig.add_trace(go.Scatter(x=df2['Dates'],y=df2['BuyPrice'], mode = 'markers',marker=dict(size=12, color="lightgreen"),showlegend=False))
     df2 = pd.DataFrame(data = {'Dates':BBUYDate,'BuyPrice':BBUY})

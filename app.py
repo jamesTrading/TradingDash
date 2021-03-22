@@ -738,7 +738,7 @@ def Option_Calculator(selected_dropdown_value,input1, input2, input3, input4, in
         Daily_Return.append((df1['Close'][x]-df1['Close'][x-1])/df1['Close'][x-1])
         x = x+1
     df1['Daily Return']=Daily_Return
-    df1['Volatility'] = df1['Daily Return'].rolling(window=252).std()
+    df1['Volatility'] = df1['Daily Return'].rolling(window=30).std()
     Annual_Volatility = (df1['Volatility'][len(df1['Volatility'])-1])*(252**(1/2))
     print("The annual volatility is: ",round(Annual_Volatility,4))
     delta_time = (input3/252)/input6

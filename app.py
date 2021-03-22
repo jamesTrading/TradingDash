@@ -1,6 +1,6 @@
 import dash
 import numpy as np
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 import dash_core_components as dcc
 import dash_html_components as html
 import plotly.express as px
@@ -725,6 +725,65 @@ def ReturnCalculator(selected_dropdown_value):
     return outputlist
     
 
+def Option_Calculator(selected_dropdown_value,input1, input2, input3, input4, input5, input6):
+    strike = float(input2)
+    risk = float(input4)
+    stock = pdr.get_data_yahoo(selected_dropdown_value,start=datetime.datetime(2018,1,1), end=date.today())
+    days = stock['Close'].count()
+    Stock_Price = round(stock['Close'][len(stock['Close'])-1],3)
+    df1 = pd.DataFrame(stock, columns=['Close','Open','Low','High'])
+    x = 1
+    Daily_Return = [0]
+    while x < days:
+        Daily_Return.append((df1['Close'][x]-df1['Close'][x-1])/df1['Close'][x-1])
+        x = x+1
+    df1['Daily Return']=Daily_Return
+    df1['Volatility'] = df1['Daily Return'].rolling(window=252).std()
+    Annual_Volatility = (df1['Volatility'][len(df1['Volatility'])-1])*(252**(1/2))
+    print("The annual volatility is: ",round(Annual_Volatility,4))
+    delta_time = (input3/252)/input6
+    u = math.exp(Annual_Volatility*(delta_time**(1/2)))
+    d = 1/u
+    p = (math.exp(risk*delta_time)-d)/(u-d)
+    S_Far = []
+    S_Near = []
+    F_Far = []
+    F_Near = []
+    x = 0
+    Option_Value = 0
+    Early_Exercise_Value = 0
+    while x <= input6:
+        S_Far.append(Stock_Price*(u**(input6-x))*(d**x))
+        if input1.upper() == 'C':
+            F_Far.append(max((S_Far[x] - strike),0))
+        if input1.upper() == 'P':
+            F_Far.append(max((strike - S_Far[x]),0))
+        x = x + 1
+    x = 1
+    counter = 0
+    delta = 0
+    while x <= input6:
+        while counter <= (input6 - x):
+            S_Near.append(Stock_Price*(u**(input6-x-counter))*(d**counter))
+            Option_Value = math.exp(-risk*delta_time)*(p*F_Far[counter]+(1-p)*F_Far[counter+1])
+            if input1.upper() == 'C' and input5.upper() == 'A':
+                Early_Exercise_Value = S_Near[counter] - strike
+            if input1.upper() == 'P' and input5.upper() == 'A':
+                Early_Exercise_Value = strike - S_Near[counter]
+            else:
+                Early_Exercise_Value = 0
+            F_Near.append(max(Option_Value,Early_Exercise_Value,0))
+            counter = counter + 1
+        delta = (F_Far[0]-F_Far[1])/((Stock_Price*u)-(Stock_Price*d))
+        S_Near = []
+        F_Far = F_Near
+        F_Near = []
+        counter = 0
+        x = x + 1
+    Premium = F_Far[0]
+    return Premium, delta
+
+
 #this creates the app -- imports the stylesheet
 app = dash.Dash(__name__)
 server = app.server
@@ -773,6 +832,19 @@ app.layout = html.Div([
         html.Table(id = 'my-fundamentals')
         
         ],style={'width': '70%', 'float': 'right','display': 'inline-block','border':'solid', 'padding-right':'2%','padding-bottom':'2%'}),
+    
+    html.Div([
+        html.H4('Option Pricing'),
+        dcc.Input(id='input-1-state', type='text', placeholder='C or P'),
+        dcc.Input(id='input-2-state', type='number', placeholder='Strike Price'),
+        dcc.Input(id='input-3-state', type='number', placeholder='Days to Expiry'),
+        dcc.Input(id='input-4-state', type='number', placeholder='Risk Free Rate'),
+        dcc.Input(id='input-5-state', type='text', placeholder='A or E'),
+        dcc.Input(id='input-6-state', type='number', placeholder='Binomial Steps'),
+        html.Button(id='submit-button-state', n_clicks=0, children='Calculate'),
+        html.Div(id='output-state')
+        
+        ],style={'width': '20%', 'float': 'left','display': 'inline-block','border':'solid', 'padding-left':'5%','padding-bottom':'2%'}),
 
     html.Div([
         html.Table(id = 'my-profile')
@@ -827,6 +899,27 @@ def company_profile(selected_dropdown_value):
     # Header
     return [html.Tr(html.Th('Company Profile'))] + [html.Tr(html.Td(output)) for output in companyprofile]
 
+@app.callback(Output('output-state', 'children'),
+              Input('submit-button-state', 'n_clicks'),
+              State('input', 'value'),
+              State('input-1-state', 'value'),
+              State('input-2-state', 'value'),
+              State('input-3-state', 'value'),
+              State('input-4-state', 'value'),
+              State('input-5-state', 'value'),
+              State('input-6-state', 'value'))
+def update_output(n_clicks, selected_dropdown_value, input1, input2, input3, input4, input5, input6):
+    if n_clicks == 0:
+        return u'''
+                Option calculation pending'''
+    else:
+        try:
+            Premium, Delta = Option_Calculator(selected_dropdown_value, input1, input2, input3, input4, input5, input6)
+            return "The company code is: ",selected_dropdown_value," the premium is: ",round(Premium,4)," the delta is: ",round(Delta,4)
+        except:
+            return "The company code is: ",selected_dropdown_value," ...Enter valid details"
 
 if __name__ == '__main__':
     app.run_server(debug=True)
+
+    

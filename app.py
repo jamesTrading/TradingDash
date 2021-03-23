@@ -679,7 +679,6 @@ def ReturnCalculator(selected_dropdown_value):
         stock30 = pdr.get_data_yahoo(CompanyCode,start=(date.today() - datetime.timedelta(days=30)), end=(date.today() - datetime.timedelta(days=30)))
         outputlist.append(('The 1 Month Return is: ',round((((stocktoday['Adj Close'][0]-stock30['Adj Close'][0])/stock30['Adj Close'][0])*100),2),'%'))
     except KeyError:
-        print('fuck')
         stock30 = pdr.get_data_yahoo(CompanyCode,start=(date.today() - datetime.timedelta(days=30+3)), end=(date.today() - datetime.timedelta(days=30+3)))
         outputlist.append(('The 1 Month Return is: ',round((((stocktoday['Adj Close'][0]-stock30['Adj Close'][0])/stock30['Adj Close'][0])*100),2),'%'))
     try:

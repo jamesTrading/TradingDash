@@ -400,7 +400,6 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
                             except:
                                 maxValnear.append(df2['Close'][days-1])
                                 maxposition = 0
-                            print(counter+toclose)
                             bigposition.append(maxposition)
                             if counter < 90:
                                 lastmax.append(max(df2['Close'][(0):(counter)]))
@@ -725,22 +724,14 @@ def ReturnCalculator(selected_dropdown_value):
     return outputlist
     
 
-def Option_Calculator(selected_dropdown_value,input1, input2, input3, input4, input5, input6):
+def Option_Calculator(selected_dropdown_value,input1, input2, input3, input4, input5, input6, input7):
     strike = float(input2)
     risk = float(input4)
+    Annual_Volatility = float(input7)
     stock = pdr.get_data_yahoo(selected_dropdown_value,start=datetime.datetime(2018,1,1), end=date.today())
     days = stock['Close'].count()
     Stock_Price = round(stock['Close'][len(stock['Close'])-1],3)
     df1 = pd.DataFrame(stock, columns=['Close','Open','Low','High'])
-    x = 1
-    Daily_Return = [0]
-    while x < days:
-        Daily_Return.append((df1['Close'][x]-df1['Close'][x-1])/df1['Close'][x-1])
-        x = x+1
-    df1['Daily Return']=Daily_Return
-    df1['Volatility'] = df1['Daily Return'].rolling(window=30).std()
-    Annual_Volatility = (df1['Volatility'][len(df1['Volatility'])-1])*(252**(1/2))
-    print("The annual volatility is: ",round(Annual_Volatility,4))
     delta_time = (input3/252)/input6
     u = math.exp(Annual_Volatility*(delta_time**(1/2)))
     d = 1/u
@@ -781,8 +772,65 @@ def Option_Calculator(selected_dropdown_value,input1, input2, input3, input4, in
         counter = 0
         x = x + 1
     Premium = F_Far[0]
-    return Premium, delta
+    return Stock_Price, Premium, delta
 
+
+def VolatilityTable(selected_dropdown_value):
+    outputlist = []
+    CompanyCode = selected_dropdown_value
+    stock = pdr.get_data_yahoo(CompanyCode,start=datetime.datetime(2018,1,1), end=date.today())
+    days = stock['Close'].count()
+    df1 = pd.DataFrame(stock, columns=['Close','Open','Low','High'])
+    x = 1
+    Daily_Return = [0]
+    while x < days:
+        Daily_Return.append((df1['Close'][x]-df1['Close'][x-1])/df1['Close'][x-1])
+        x = x+1
+    df1['Daily Return']=Daily_Return
+    df1['252 Day Volatility'] = df1['Daily Return'].rolling(window=252).std()
+    df1['180 Day Volatility'] = df1['Daily Return'].rolling(window=180).std()
+    df1['60 Day Volatility'] = df1['Daily Return'].rolling(window=60).std()
+    df1['30 Day Volatility'] = df1['Daily Return'].rolling(window=30).std()
+    Annual_Volatility252 = (df1['252 Day Volatility'][len(df1['252 Day Volatility'])-1])*(252**(1/2))
+    Annual_Volatility180 = (df1['180 Day Volatility'][len(df1['180 Day Volatility'])-1])*(252**(1/2))
+    Annual_Volatility60 = (df1['60 Day Volatility'][len(df1['60 Day Volatility'])-1])*(252**(1/2))
+    Annual_Volatility30 = (df1['30 Day Volatility'][len(df1['30 Day Volatility'])-1])*(252**(1/2))
+    outputlist.append(("The code is: ",selected_dropdown_value))
+    outputlist.append(("The annual volatility is (252 period): ",round(Annual_Volatility252,4)))
+    outputlist.append(("The annual volatility is (180 period): ",round(Annual_Volatility180,4)))
+    outputlist.append(("The annual volatility is (60 period): ",round(Annual_Volatility60,4)))
+    outputlist.append(("The annual volatility is (30 period): ",round(Annual_Volatility30,4)))
+    return outputlist
+
+def VolatilityGrapher(selected_dropdown_value):
+    CompanyCode = selected_dropdown_value
+    stock = pdr.get_data_yahoo(CompanyCode,start=datetime.datetime(2018,1,1), end=date.today())
+    days = stock['Close'].count()
+    df1 = pd.DataFrame(stock, columns=['Close','Open','Low','High'])
+    x = 1
+    Daily_Return = [0]
+    while x < days:
+        Daily_Return.append((df1['Close'][x]-df1['Close'][x-1])/df1['Close'][x-1])
+        x = x+1
+    df1['Daily Return']=Daily_Return
+    df1['252 Day Volatility'] = df1['Daily Return'].rolling(window=252).std()
+    df1['180 Day Volatility'] = df1['Daily Return'].rolling(window=180).std()
+    df1['60 Day Volatility'] = df1['Daily Return'].rolling(window=60).std()
+    df1['30 Day Volatility'] = df1['Daily Return'].rolling(window=30).std()
+    df1['Annual_Volatility252'] = (df1['252 Day Volatility'])*(252**(1/2))
+    df1['Annual_Volatility180'] = (df1['180 Day Volatility'])*(252**(1/2))
+    df1['Annual_Volatility60'] = (df1['60 Day Volatility'])*(252**(1/2))
+    df1['Annual_Volatility30'] = (df1['30 Day Volatility'])*(252**(1/2))
+    title_graph = "Historical Volatility Grapher - "+CompanyCode
+    fig = go.Figure()
+    fig.update_layout(title=title_graph, width=1000, height = 600)
+    fig.update_yaxes(title = "Annual Volatility Equivalent")
+    fig.add_trace(go.Scatter(x=df1.index,y=df1['Annual_Volatility252'], mode = 'lines',marker=dict(size=1, color="blue"),showlegend=True,name="252 Day"))
+    fig.add_trace(go.Scatter(x=df1.index,y=df1['Annual_Volatility180'], mode = 'lines',marker=dict(size=1, color="orange"),showlegend=True,name="180 Day"))
+    fig.add_trace(go.Scatter(x=df1.index,y=df1['Annual_Volatility60'], mode = 'lines',marker=dict(size=1, color="green"),showlegend=True,name="60 Day"))
+    fig.add_trace(go.Scatter(x=df1.index,y=df1['Annual_Volatility30'], mode = 'lines',marker=dict(size=1, color="black"),showlegend=True,name="30 Day"))
+    fig.update_xaxes(dtick="M2",tickformat="%d\n%b\n%Y")
+    return fig
 
 #this creates the app -- imports the stylesheet
 app = dash.Dash(__name__)
@@ -841,6 +889,7 @@ app.layout = html.Div([
         dcc.Input(id='input-4-state', type='number', placeholder='Risk Free Rate'),
         dcc.Input(id='input-5-state', type='text', placeholder='A or E'),
         dcc.Input(id='input-6-state', type='number', placeholder='Binomial Steps'),
+        dcc.Input(id='input-7-state', type='number', placeholder='Volatility'),
         html.Button(id='submit-button-state', n_clicks=0, children='Calculate'),
         html.Div(id='output-state')
         
@@ -849,7 +898,18 @@ app.layout = html.Div([
     html.Div([
         html.Table(id = 'my-profile')
         
-        ],style={'width': '70%', 'float': 'right','display': 'inline-block','border':'solid', 'padding-right':'2%','padding-bottom':'2%','padding-top':'2%'})
+        ],style={'width': '70%', 'float': 'right','display': 'inline-block','border':'solid', 'padding-right':'2%','padding-bottom':'2%','padding-top':'2%'}),
+
+    
+    html.Div([
+        html.H4('Volatility'),
+        html.Table(id = 'my-volatility')
+        
+        ],style={'width': '20%', 'float': 'left','display': 'inline-block','border':'solid', 'padding-left':'2%', 'padding-right':'2%','padding-bottom':'2%'}),
+
+    html.Div([
+        dcc.Graph(id='Volatility-graph')
+        ],style={'width': '70%', 'float': 'right','display': 'inline-block','border':'solid', 'padding-right':'2%','padding-bottom':'2%'})
 
 ])
 
@@ -888,7 +948,6 @@ def generate_output_list(selected_dropdown_value):
 @app.callback(Output('my-fundamentals', 'children'), [Input('input', 'value')])
 def generate_fundamentaltable(selected_dropdown_value):
     table = Fundamentals(selected_dropdown_value)
-    print(table)
     # Header
     return html.Table([html.Tr([html.Th(col) for col in table.columns])] + [html.Tr([html.Td(table.iloc[i][col]) for col in table.columns]) for i in range(0,len(table.EPS))],style={'border-spacing': '13px'})
 
@@ -907,17 +966,32 @@ def company_profile(selected_dropdown_value):
               State('input-3-state', 'value'),
               State('input-4-state', 'value'),
               State('input-5-state', 'value'),
-              State('input-6-state', 'value'))
-def update_output(n_clicks, selected_dropdown_value, input1, input2, input3, input4, input5, input6):
+              State('input-6-state', 'value'),
+              State('input-7-state', 'value'))
+def update_output(n_clicks, selected_dropdown_value, input1, input2, input3, input4, input5, input6, input7):
     if n_clicks == 0:
         return u'''
                 Option calculation pending'''
     else:
         try:
-            Premium, Delta = Option_Calculator(selected_dropdown_value, input1, input2, input3, input4, input5, input6)
-            return "The company code is: ",selected_dropdown_value," the premium is: ",round(Premium,4)," the delta is: ",round(Delta,4)
+            Stock_Price, Premium, Delta = Option_Calculator(selected_dropdown_value, input1, input2, input3, input4, input5, input6, input7)
+            return "The company code is: ",selected_dropdown_value, ". The current price is: ",round(Stock_Price,2),". the premium is: ",round(Premium,4),". the delta is: ",round(Delta,4)
         except:
             return "The company code is: ",selected_dropdown_value," ...Enter valid details"
+
+
+# for the output-list
+@app.callback(Output('my-volatility', 'children'), [Input('input', 'value')])
+def generate_volatility_list(selected_dropdown_value):
+    outputlist = VolatilityTable(selected_dropdown_value)
+    # Header
+    return [html.Tr(html.Th('Volatility - Each Period'))] + [html.Tr(html.Td(output)) for output in outputlist]
+
+@app.callback(Output('Volatility-graph','figure'),[Input('input','value')])
+def update_stonker(selected_dropdown_value):
+    fig = VolatilityGrapher(selected_dropdown_value)
+    return fig
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)

@@ -97,7 +97,10 @@ def Fundamentals(selected_dropdown_value):
         else:
             OperatingCashflow = OperatingCashflow2
     except:
-        OperatingCashflow = OperatingCashflow1
+        try:
+            OperatingCashflow = OperatingCashflow1
+        except:
+            OperatingCashflow = ['-']
     for element in NetIncome:
         EPS.append(round(element/Sharecount[y],3))
         y = y + 1
@@ -141,7 +144,7 @@ def Fundamentals(selected_dropdown_value):
     return df
 
 #This is the part of the code that takes buy points and displays them
-def FibonacciGrapher(CompanyCode, dates, homie, selldate, scost, BBUY, BBUYDate): 
+def FibonacciGrapher(CompanyCode, SellDate, SellPrice, BuyPrice, BuyDate): 
     CompanyCode = CompanyCode
     x = 0
     y = 0
@@ -150,16 +153,8 @@ def FibonacciGrapher(CompanyCode, dates, homie, selldate, scost, BBUY, BBUYDate)
     count = 125
     High = []
     Low = []
-    Fib68 = []
-    FibValue68 = []
-    Fib50 = []
-    FibValue50 = []
-    Fib38 = []
-    FibValue38 = []
     HighValue = []
     LowValue = []
-    Extension = []
-    ExtensionValue = []
     HighValue2 = []
     LowValue2 = []
     LowValue3 = []
@@ -181,10 +176,6 @@ def FibonacciGrapher(CompanyCode, dates, homie, selldate, scost, BBUY, BBUYDate)
             differenceidentify = 0
         High.append(max(close_prices[(days - 1 - (x+1)*100):((days-1) - (x * 100) + differenceidentify)]))
         Low.append(min(close_prices[(days -1 - (x+1)*100):((days-1) - (x * 100))]))
-        Fib68.append((High[x]-Low[x])*0.618 + Low[x])
-        Fib50.append((High[x]-Low[x])*0.50 + Low[x])
-        Fib38.append((High[x]-Low[x])*0.382 + Low[x])
-        Extension.append(round((((float(High[x]) - float(Low[x]))*1.618)+float(Low[x])),2))
         x = x + 1
         if ((x+1)*100 == days):
             x = x+2
@@ -193,18 +184,10 @@ def FibonacciGrapher(CompanyCode, dates, homie, selldate, scost, BBUY, BBUYDate)
     while y < (days-count):
         HighValue.append(None)
         LowValue.append(None)
-        ExtensionValue.append(None)
-        FibValue68.append(None)
-        FibValue50.append(None)
-        FibValue38.append(None)
         y = y + 1
     while w < count:
         HighValue.append(round(float(High[0]), 2))
         LowValue.append(round(float(Low[0]), 2))
-        FibValue68.append(round(float(Fib68[0]), 2))
-        FibValue50.append(round(float(Fib50[0]), 2))
-        FibValue38.append(round(float(Fib38[0]), 2))
-        ExtensionValue.append(round(float(Extension[0]), 2))
         w = w + 1
     y = 0
     w = 0
@@ -225,15 +208,71 @@ def FibonacciGrapher(CompanyCode, dates, homie, selldate, scost, BBUY, BBUYDate)
     df1['High3'] = HighValue3
     df1['HFib'] = HighValue
     df1['LFib'] = LowValue
-    df1['Extension'] = ExtensionValue
-    df1['Fib68'] = FibValue68
-    df1['Fib50'] = FibValue50
-    df1['Fib38'] = FibValue38
     df1['HFib2'] = HighValue2
     df1['LFib2'] = LowValue2
     df1['MMA'] = df1.rolling(window=50).mean()['Close']
-    df1['SMA'] = df1.rolling(window=30).mean()['Close']
+    df1['SMA'] = df1.rolling(window=20).mean()['Close']
     df1['LMA'] = df1.rolling(window=200).mean()['Close']
+    df1['20 Day Volatility'] = df1['Close'].rolling(window=20).std()
+    df1['Top Bollinger Band']=df1['SMA']+2*df1['20 Day Volatility']
+    df1['Bottom Bollinger Band']=df1['SMA']-2*df1['20 Day Volatility']
+    df1['Bollinger Band Difference']=df1['Top Bollinger Band']-df1['Bottom Bollinger Band']
+    x = 1
+    BolRet = [0]
+    while x < days:
+        BolRet.append((df1['Bollinger Band Difference'][x]-df1['Bollinger Band Difference'][x-1])/df1['Bollinger Band Difference'][x-1])
+        x = x + 1
+    x = 1
+    Daily_Return = [0]
+    while x < days:
+        Daily_Return.append((df1['Close'][x]-df1['Close'][x-1])/df1['Close'][x-1])
+        x = x+1
+    df1['Daily Return']=Daily_Return
+    df1['252 Day Volatility'] = df1['Daily Return'].rolling(window=252).std()
+    df1['180 Day Volatility'] = df1['Daily Return'].rolling(window=180).std()
+    df1['60 Day Volatility'] = df1['Daily Return'].rolling(window=60).std()
+    df1['30 Day Volatility'] = df1['Daily Return'].rolling(window=20).std()
+    df1['Annual_Volatility252'] = (df1['252 Day Volatility'])*(252**(1/2))
+    df1['Annual_Volatility180'] = (df1['180 Day Volatility'])*(252**(1/2))
+    df1['Annual_Volatility60'] = (df1['60 Day Volatility'])*(252**(1/2))
+    df1['Annual_Volatility20'] = (df1['30 Day Volatility'])*(252**(1/2))
+    df1['Bollinger Diff Return'] = BolRet
+    df1['CUNT']=df1['Bollinger Diff Return'].mean()
+    df1['BUTT']=df1['CUNT']-df1['Bollinger Diff Return'].std()
+    x = 25
+    BollingerDate = []
+    Under = []
+    Over = []
+    Bollinger = []
+    while x < days-5:
+        if df1['Annual_Volatility20'][x]<df1['Annual_Volatility60'][x]:
+            if df1['Annual_Volatility20'][x]<df1['Annual_Volatility180'][x]:
+                if df1['Annual_Volatility20'][x]<df1['Annual_Volatility252'][x]:
+                    if df1['Annual_Volatility20'][x-1]>df1['Annual_Volatility60'][x-1] or df1['Annual_Volatility20'][x-1]>df1['Annual_Volatility180'][x-1] or df1['Annual_Volatility20'][x-1]>df1['Annual_Volatility252'][x-1]:
+                        Under = df1['Bollinger Diff Return'][x-5:x+1]
+                        Underposition = np.where(Under == Under.min())
+                        Underposition = Underposition[0][0]
+                        Over = df1['Bollinger Diff Return'][x-4+Underposition:x+2+Underposition]
+                        Overposition = np.where(Over == Over.max())
+                        Overposition = Overposition[0][0]
+                        if df1['Bollinger Diff Return'][x-5+Underposition]<df1['BUTT'][x]:
+                               if df1['Bollinger Diff Return'][x-4+Underposition+Overposition]>0:
+                                    BollingerDate.append(df1.index.date[x-4+Underposition+Overposition])
+                                    Bollinger.append((df1['High'][x-4+Underposition+Overposition])*1.05)
+        Under = df1['Bollinger Diff Return'][x-5:x+1]
+        Underposition = np.where(Under == Under.min())
+        Underposition = Underposition[0][0]
+        Over = df1['Bollinger Diff Return'][x-4+Underposition:x+2+Underposition]
+        Overposition = np.where(Over == Over.max())
+        Overposition = Overposition[0][0]
+        if df1['Bollinger Diff Return'][x-5+Underposition]<df1['BUTT'][x]:
+               if df1['Bollinger Diff Return'][x-4+Underposition+Overposition]>0:
+                   if min(df1['Annual_Volatility20'][x-4:x-4+Underposition+Overposition+1])<min(df1['Annual_Volatility60'][x-4:x-4+Underposition+Overposition+1]):
+                       if min(df1['Annual_Volatility20'][x-4:x-4+Underposition+Overposition+1])<min(df1['Annual_Volatility180'][x-4:x-4+Underposition+Overposition+1]):
+                           if min(df1['Annual_Volatility20'][x-4:x-4+Underposition+Overposition+1])<min(df1['Annual_Volatility252'][x-4:x-4+Underposition+Overposition+1]):
+                                BollingerDate.append(df1.index.date[x-4+Underposition+Overposition])
+                                Bollinger.append((df1['High'][x-4+Underposition+Overposition])*1.05)
+        x = x + 1
     fig = go.Figure()
     king = 0
     if "." in CompanyCode:
@@ -241,12 +280,12 @@ def FibonacciGrapher(CompanyCode, dates, homie, selldate, scost, BBUY, BBUYDate)
     else:
         king = ('US Market - '+ CompanyCode)
     fig = go.Figure(data=[go.Candlestick(x=df1.index,open=df1['Open'],high=df1['High'],low=df1['Low'],close=df1['Close'])])
+    fig.add_trace(go.Scatter(x=df1.index,y=df1['Bottom Bollinger Band'], mode = 'lines',marker=dict(size=1, color="purple"),showlegend=False))
+    fig.add_trace(go.Scatter(x=df1.index,y=df1['Top Bollinger Band'], mode = 'lines',fill='tonexty',fillcolor='rgba(173,204,255,0.2)',marker=dict(size=1, color="purple"),showlegend=False))
     fig.update_layout(xaxis_rangeslider_visible=False, width = 1000, height = 700,title=king, showlegend=False)
-    df2 = pd.DataFrame(data = {'Dates':dates,'BuyPrice':homie})
-    fig.add_trace(go.Scatter(x=df2['Dates'],y=df2['BuyPrice'], mode = 'markers',marker=dict(size=12, color="lightgreen"),showlegend=False))
-    df2 = pd.DataFrame(data = {'Dates':BBUYDate,'BuyPrice':BBUY})
+    df2 = pd.DataFrame(data = {'Dates':BuyDate,'BuyPrice':BuyPrice})
     fig.add_trace(go.Scatter(x=df2['Dates'],y=df2['BuyPrice'], mode = 'markers',marker=dict(size=12, color="green"),showlegend=False))
-    df3 = pd.DataFrame(data = {'Dates':selldate,'SellPrice':scost})
+    df3 = pd.DataFrame(data = {'Dates':SellDate,'SellPrice':SellPrice})
     fig.add_trace(go.Scatter(x=df3['Dates'],y=df3['SellPrice'], mode = 'markers',marker=dict(size=12, color="Red"),showlegend=False))
     fig.update_xaxes(dtick="M2",tickformat="%d\n%b\n%Y")
     fig.add_trace(go.Scatter(x=df1.index,y=df1['LMA'], mode = 'lines',marker=dict(size=1, color="orange"),showlegend=False))
@@ -257,22 +296,113 @@ def FibonacciGrapher(CompanyCode, dates, homie, selldate, scost, BBUY, BBUYDate)
     fig.add_trace(go.Scatter(x=df1.index,y=df1['LFib'], mode = 'lines',marker=dict(size=1, color="black"),showlegend=False))
     fig.add_trace(go.Scatter(x=df1.index,y=df1['LFib2'], mode = 'lines',marker=dict(size=1, color="black"),showlegend=False))
     fig.add_trace(go.Scatter(x=df1.index,y=df1['Low3'], mode = 'lines',marker=dict(size=1, color="black"),showlegend=False))
-    fig.add_trace(go.Scatter(x=df1.index,y=df1['Fib68'], mode = 'lines',marker=dict(size=1, color="red"),showlegend=False))
-    fig.add_trace(go.Scatter(x=df1.index,y=df1['Fib50'], mode = 'lines',marker=dict(size=1, color="green"),showlegend=False))
-    fig.add_trace(go.Scatter(x=df1.index,y=df1['Fib38'], mode = 'lines',marker=dict(size=1, color="orange"),showlegend=False))
+    df4 = pd.DataFrame(data = {'BolDates':BollingerDate,'BolPrice':Bollinger})
+    fig.add_trace(go.Scatter(x=df4['BolDates'],y=df4['BolPrice'], mode = 'markers',marker=dict(size=12, color="black"), marker_symbol = "arrow-bar-down",showlegend=False))
     return fig
+
+
+#This is the part of the code that takes buy points and displays them
+def BollingerBands(selected_dropdown_value): 
+    CompanyCode = selected_dropdown_value
+    stock = pdr.get_data_yahoo(CompanyCode,start=datetime.datetime(2018,1,1), end=date.today())
+    days = stock['Close'].count()
+    close_prices = stock['Close']
+    df1 = pd.DataFrame(stock, columns=['Close','Open','Low','High'])
+    df1['20 Day Volatility'] = df1['Close'].rolling(window=20).std()
+    df1['LMA'] = df1.rolling(window=20).mean()['Close']
+    df1['Top Bollinger Band']=df1['LMA']+2*df1['20 Day Volatility']
+    df1['Bottom Bollinger Band']=df1['LMA']-2*df1['20 Day Volatility']
+    df1['Bollinger Band Difference']=df1['Top Bollinger Band']-df1['Bottom Bollinger Band']
+    df1['Bol Dif MA'] = df1['Bollinger Band Difference'].rolling(window=200).mean()
+    df1['Bol Dif STD'] = df1['Bollinger Band Difference'].rolling(window=200).mean()+ df1['Bollinger Band Difference'].rolling(window=200).std()
+    df1['Bol Dif NEG STD'] = df1['Bollinger Band Difference'].rolling(window=200).mean() - df1['Bollinger Band Difference'].rolling(window=200).std()
+    x = 1
+    BolRet = [0]
+    while x < days:
+        BolRet.append((df1['Bollinger Band Difference'][x]-df1['Bollinger Band Difference'][x-1])/df1['Bollinger Band Difference'][x-1])
+        x = x + 1
+    x = 1
+    Daily_Return = [0]
+    while x < days:
+        Daily_Return.append((df1['Close'][x]-df1['Close'][x-1])/df1['Close'][x-1])
+        x = x+1
+    df1['Daily Return']=Daily_Return
+    df1['252 Day Volatility'] = df1['Daily Return'].rolling(window=252).std()
+    df1['180 Day Volatility'] = df1['Daily Return'].rolling(window=180).std()
+    df1['60 Day Volatility'] = df1['Daily Return'].rolling(window=60).std()
+    df1['30 Day Volatility'] = df1['Daily Return'].rolling(window=20).std()
+    df1['Annual_Volatility252'] = (df1['252 Day Volatility'])*(252**(1/2))
+    df1['Annual_Volatility180'] = (df1['180 Day Volatility'])*(252**(1/2))
+    df1['Annual_Volatility60'] = (df1['60 Day Volatility'])*(252**(1/2))
+    df1['Annual_Volatility20'] = (df1['30 Day Volatility'])*(252**(1/2))
+    df1['Bollinger Diff Return'] = BolRet
+    df1['CUNT']=df1['Bollinger Diff Return'].mean()
+    df1['BUTT']=df1['CUNT']-df1['Bollinger Diff Return'].std()
+    x = 25
+    BuyDate = []
+    Under = []
+    Over = []
+    Buy = []
+    while x < days-5:
+        if df1['Annual_Volatility20'][x]<df1['Annual_Volatility60'][x]:
+            if df1['Annual_Volatility20'][x]<df1['Annual_Volatility180'][x]:
+                if df1['Annual_Volatility20'][x]<df1['Annual_Volatility252'][x]:
+                    if df1['Annual_Volatility20'][x-1]>df1['Annual_Volatility60'][x-1] or df1['Annual_Volatility20'][x-1]>df1['Annual_Volatility180'][x-1] or df1['Annual_Volatility20'][x-1]>df1['Annual_Volatility252'][x-1]:
+                        Under = df1['Bollinger Diff Return'][x-5:x+1]
+                        Underposition = np.where(Under == Under.min())
+                        Underposition = Underposition[0][0]
+                        Over = df1['Bollinger Diff Return'][x-4+Underposition:x+2+Underposition]
+                        Overposition = np.where(Over == Over.max())
+                        Overposition = Overposition[0][0]
+                        if df1['Bollinger Diff Return'][x-5+Underposition]<df1['BUTT'][x]:
+                               if df1['Bollinger Diff Return'][x-4+Underposition+Overposition]>0:
+                                    BuyDate.append(df1.index.date[x-4+Underposition+Overposition])
+                                    Buy.append(df1['Bollinger Band Difference'][x-4+Underposition+Overposition])
+        Under = df1['Bollinger Diff Return'][x-5:x+1]
+        Underposition = np.where(Under == Under.min())
+        Underposition = Underposition[0][0]
+        Over = df1['Bollinger Diff Return'][x-4+Underposition:x+2+Underposition]
+        Overposition = np.where(Over == Over.max())
+        Overposition = Overposition[0][0]
+        if df1['Bollinger Diff Return'][x-5+Underposition]<df1['BUTT'][x]:
+               if df1['Bollinger Diff Return'][x-4+Underposition+Overposition]>0:
+                   if min(df1['Annual_Volatility20'][x-4:x-4+Underposition+Overposition+1])<min(df1['Annual_Volatility60'][x-4:x-4+Underposition+Overposition+1]):
+                       if min(df1['Annual_Volatility20'][x-4:x-4+Underposition+Overposition+1])<min(df1['Annual_Volatility180'][x-4:x-4+Underposition+Overposition+1]):
+                           if min(df1['Annual_Volatility20'][x-4:x-4+Underposition+Overposition+1])<min(df1['Annual_Volatility252'][x-4:x-4+Underposition+Overposition+1]):
+                                BuyDate.append(df1.index.date[x-4+Underposition+Overposition])
+                                Buy.append(df1['Bollinger Band Difference'][x-4+Underposition+Overposition])
+        x = x + 1
+    fig = go.Figure()                                                                                                            
+    king = 0
+    if "." in CompanyCode:
+        king = ('Bollinger Band Difference - '+ CompanyCode)
+    else:
+        king = ('Bollinger Band Difference - '+ CompanyCode)
+    fig.add_trace(go.Scatter(x=df1.index,y=df1['Bollinger Band Difference'], mode = 'lines',marker=dict(size=12, color="blue"), marker_symbol = "star-diamond",showlegend=False))
+    fig.update_layout(xaxis_rangeslider_visible=False, width = 1000, height = 400,title=king, showlegend=False)
+    fig.update_xaxes(dtick="M2",tickformat="%d\n%b\n%Y")
+    fig.update_yaxes(title = "Bollinger Band Difference")
+    fig.add_trace(go.Scatter(x=df1.index,y=df1['Bol Dif MA'], mode = 'lines',marker=dict(size=12, color="green"),showlegend=True,name="200 Bol MA"))
+    fig.add_trace(go.Scatter(x=df1.index,y=df1['Bol Dif STD'], mode = 'lines',marker=dict(size=12, color="purple"),showlegend=True,name="200 Bol STD"))
+    fig.add_trace(go.Scatter(x=df1.index,y=df1['Bol Dif NEG STD'], mode = 'lines',marker=dict(size=12, color="purple"),showlegend=True,name="200 Bol NEG STD"))
+    df2 = pd.DataFrame(data = {'Dates':BuyDate,'BuyPrice':Buy})
+    fig.add_trace(go.Scatter(x=df2['Dates'],y=df2['BuyPrice'], mode = 'markers',marker=dict(size=12, color="red"), marker_symbol = "arrow-bar-down",showlegend=True,name="Significants"))
+    return fig
+
+
 
 #This is the part of the app for producing the main info and buy/sell points
 def TradingAlgo(selected_dropdown_value, junky, signalinput):
-    costbases = 0
-    signalinput = float(signalinput)
     factor = junky
-    sharecount = 0
-    counter = 0
-    pscost = 0
-    currentprices = 0
-    currentcostbases = 0
-    TYPValue = 0
+    CompanyCode = selected_dropdown_value
+    stock = pdr.get_data_yahoo(CompanyCode,start=datetime.datetime(2018,2,2), end=date.today())
+    days = stock['Close'].count()
+    df1 = pd.DataFrame(stock, columns=['Close','Open','High','Low','Volume'])
+    df1['26 EMA'] = df1.ewm(span = 26, min_periods = 26).mean()['Close']
+    df1['12 EMA'] = df1.ewm(span = 12, min_periods = 12).mean()['Close']
+    df1['MACD'] = df1['12 EMA'] - df1['26 EMA']
+    df1['MACD Ave'] = df1['MACD'].mean()
+    df1['Signal Line'] = df1.ewm(span = 9, min_periods = 9).mean()['MACD']
     AbsTP = []
     x = 0
     y = 0
@@ -284,54 +414,23 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
     Negative = []
     MFR = []
     Equat = 0
-    timer = 0
-    timetrack = []
     MFI = [50,50,50,50,50,50,50,50,50,50,50,50,50,50]
-    SellRange = []
-    seller = 0
-    BuyRange = []
-    buyer = 0
-    CompanyCode = selected_dropdown_value
-    outputlist = []
-    if "." in CompanyCode:
-        market = pdr.get_data_yahoo('^AXJO',start=datetime.datetime(2018,2,2), end=date.today())
-        outputlist.append(('Australian Market - '+ CompanyCode))
-    else:
-        market = pdr.get_data_yahoo('^GSPC',start=datetime.datetime(2018,2,2), end=date.today())
-        outputlist.append(('US Market - '+ CompanyCode))
-    stock = pdr.get_data_yahoo(CompanyCode,start=datetime.datetime(2018,2,2), end=date.today())
-    days = stock['Close'].count()
-    cuck = market['Close'].count()  
-    while timer < days:
-        timetrack.append((timer+1))
-        timer = timer + 1
-    while buyer < days:
-        BuyRange.append(25)
-        buyer = buyer + 1
-    while seller < days:
-        SellRange.append(80)
-        seller = seller + 1
-    df2 = pd.DataFrame(stock)
-    df1 = pd.DataFrame(market)
-    df2.index = pd.to_datetime(df2.index)
-    df2['LMA'] = df2.rolling(window=100).mean()['Close']
-    df2['SMA'] = df2.rolling(window=30).mean()['Close']
-    df2['Typical Price'] = (df2['Close'] + df2['High'] + df2['Low'])/3
-    AbsTP.append(df2['Typical Price'].iloc[x])
+    df1['Typical Price'] = (df1['Close'] + df1['High'] + df1['Low'])/3
+    AbsTP.append(df1['Typical Price'].iloc[x])
     while x < (days - 1):
-        if df2['Typical Price'].iloc[(x+1)] > df2['Typical Price'].iloc[x]:
-            AbsTP.append(df2['Typical Price'].iloc[(x+1)])
+        if df1['Typical Price'].iloc[(x+1)] > df1['Typical Price'].iloc[x]:
+            AbsTP.append(df1['Typical Price'].iloc[(x+1)])
         else:
-            AbsTP.append((df2['Typical Price'].iloc[(x+1)])*(-1))
+            AbsTP.append((df1['Typical Price'].iloc[(x+1)])*(-1))
         x = x + 1
-    df2['Abs TP'] = AbsTP
-    df2['Raw Money'] = df2['Abs TP'] * df2['Volume']
+    df1['Abs TP'] = AbsTP
+    df1['Raw Money'] = df1['Abs TP'] * df1['Volume']
     while y < days:
-        if df2['Raw Money'].iloc[y] > 0:
-            Positive.append(df2['Raw Money'].iloc[y])
+        if df1['Raw Money'].iloc[y] > 0:
+            Positive.append(df1['Raw Money'].iloc[y])
             Negative.append(0)
         else:
-            Negative.append(df2['Raw Money'].iloc[y])
+            Negative.append(df1['Raw Money'].iloc[y])
             Positive.append(0)
         y = y + 1
     while z < 14:
@@ -339,10 +438,7 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
         NegRatio = NegRatio + Negative[z]
         z = z + 1
     while z < days:
-        try:
-            MFR.append((PosRatio/(-1*NegRatio)))
-        except:
-            MFR.append((PosRatio/(-1*0.00001)))
+        MFR.append((PosRatio/(-1*NegRatio)))
         PosRatio = PosRatio - Positive[(z - 14)] + Positive[z]
         NegRatio = NegRatio - Negative[(z - 14)] + Negative[z]
         z = z + 1
@@ -350,216 +446,61 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
         Equat = 100 - (100/(1+MFR[w]))
         MFI.append(Equat)
         w = w + 1
-    df2['MFI'] = MFI
-    df2['SELL'] = SellRange
-    df2['BUYER'] = BuyRange
-    df2['Timer'] = timetrack
-    df2['26 EMA'] = df2.ewm(span = 26, min_periods = 26).mean()['Close']
-    df2['12 EMA'] = df2.ewm(span = 12, min_periods = 12).mean()['Close']
-    df2['MACD'] = df2['12 EMA'] - df2['26 EMA']
-    df2['Signal Line'] = df2.ewm(span = 9, min_periods = 9).mean()['MACD']
-    xtra = 0
-    trade_return = []
-    maxValnear = []
-    bigposition = []
-    market_return = []
-    largebuy = 0
-    largebuycounter = 0
-    small = 0
-    smallcounter = 0
-    dates = []
-    homie = []
-    bbb = 0
-    lastmax = []
-    lastmin = []
-    bbbcounter = 0
-    mfucker = []
-    signal = 0
-    tendies = []
-    MFItracker = []
-    internalcounter = 3
-    BBUY = []
-    BBUYDate = []
-    toclose = 0
-    while counter < (days):
-        TYPValue = round(float(df2['Close'][counter]),2) + TYPValue
-        if round(float(df2['MFI'][counter]),2) < 30:
-            if df2['MACD'][counter] < 0:
-                if (df2['MACD'][counter]) < (df2['Signal Line'][counter]):
-                    if abs((df2['MACD'][counter] - df2['Signal Line'][counter])) < abs((df2['MACD'][counter-1] - df2['Signal Line'][counter-1])):
-                        if abs(df2['MACD'][counter]) > abs(df2['MACD'][counter-1]):
-                            if counter+90>days-1:
-                                toclose = days-counter-1
-                            else:
-                                toclose = 90
-                            Valnear = df2['Close'][(counter):(counter+toclose)]
-                            try:
-                                maxValnear.append(max(Valnear))
-                                maxposition = np.where(Valnear == Valnear.max())
-                                maxposition = maxposition[0][0]
-                            except:
-                                maxValnear.append(df2['Close'][days-1])
-                                maxposition = 0
-                            bigposition.append(maxposition)
-                            if counter < 90:
-                                lastmax.append(max(df2['Close'][(0):(counter)]))
-                                lastmin.append(min(df2['Close'][(0):(counter)]))
-                            else:
-                                lastmax.append(max(df2['Close'][(counter - 90):(counter-5)]))
-                                lastmin.append(min(df2['Close'][(counter - 90):(counter - 5)]))
-                            if days-counter > 90:
-                                mfucker.append((((lastmax[len(lastmax)-1]-lastmin[len(lastmax)-1])*0.618+round(float(df2['Close'][counter]),2))-maxValnear[sharecount])/maxValnear[sharecount])                                
-                                signal = round((((lastmax[len(lastmax)-1]-lastmin[len(lastmax)-1])*0.618+round(float(df2['Close'][counter]),2))-round(float(df2['Close'][(counter)]),2))/round(float(df2['Close'][(counter)]),2),5)
-                            if days - counter <= 90:
-                                Valnear = df2['Close'][(counter):(days-1)]
-                                if days - counter < 2:
-                                    maxValnear.append(df2['Close'][counter])
-                                    mfucker.append((((lastmax[len(lastmax)-1]-lastmin[len(lastmax)-1])*0.618+round(float(df2['Close'][counter]),2))-maxValnear[sharecount])/maxValnear[sharecount])
-                                    signal = round((((lastmax[len(lastmax)-1]-lastmin[len(lastmax)-1])*0.618+round(float(df2['Close'][counter]),2))-round(float(df2['Close'][(counter)]),2))/round(float(df2['Close'][(counter)]),2),5)
-                                else:
-                                    maxValnear.append(max(Valnear))
-                                    mfucker.append((((lastmax[len(lastmax)-1]-lastmin[len(lastmax)-1])*0.618+round(float(df2['Close'][counter]),2))-maxValnear[sharecount])/maxValnear[sharecount])
-                                    signal = round((((lastmax[len(lastmax)-1]-lastmin[len(lastmax)-1])*0.618+round(float(df2['Close'][counter]),2))-round(float(df2['Close'][(counter)]),2))/round(float(df2['Close'][(counter)]),2),5)
-                            if signal > signalinput:
-                                tendies.append(round((maxValnear[sharecount-1] - round(float(df2['Close'][(counter)]),3))/round(float(df2['Close'][(counter)]),3),3))
-                                dates.append(df2.index.date[counter])
-                                homie.append(round(float(df2['Close'][counter]),3))
-                                MFItracker.append(df2['MFI'][counter])
-                                if (counter + 1) == days:
-                                    costbases = costbases + round(float(df2['Close'][(counter)]),3)
-                                else:
-                                    costbases = costbases + round(float(df2['Close'][(counter+1)]),3)
-                                bbb = bbb + round(float(df2['SMA'][counter]),2)
-                                bbbcounter = bbbcounter + 1
-                                sharecount = sharecount + 1
-                                trade_return.append(((maxValnear[sharecount-1] - round(float(df2['Close'][(counter)]),3))/round(float(df2['Close'][(counter)]),3))*100)
-                                if df2['Close'][counter] < df2['LMA'][counter]*0.95:
-                                    largebuy = (maxValnear[sharecount-1] - round(float(df2['Close'][(counter)]),3))/round(float(df2['Close'][(counter)]),3)*100 + largebuy
-                                    largebuycounter = largebuycounter + 1
-                                else:
-                                    small = (maxValnear[sharecount-1] - round(float(df2['Close'][(counter)]),3))/round(float(df2['Close'][(counter)]),3)*100 + small
-                                    smallcounter = smallcounter + 1
-                                signal = 0
-                                lengthy = 15
-                                if (days - counter) < 15:
-                                    lengthy = counter - days - 3
-                                while internalcounter < lengthy:
-                                    if df2['MFI'][(counter+internalcounter)] > MFItracker[len(MFItracker)-1]:
-                                        if (df2['Close'][counter+internalcounter]-df2['Close'][counter])/df2['Close'][counter] < -0.04:
-                                            tendies.append(round((maxValnear[sharecount-1] - round(float(df2['Close'][(counter+internalcounter)]),3))/round(float(df2['Close'][(counter+internalcounter)]),3),3))
-                                            dates.append(df2.index.date[counter+internalcounter])
-                                            homie.append(round(float(df2['Close'][counter+internalcounter]),3))
-                                            MFItracker.append(df2['MFI'][counter+internalcounter])
-                                            BBUY.append(round(float(df2['Close'][counter+internalcounter]),3))
-                                            BBUYDate.append(df2.index.date[counter+internalcounter])
-                                            costbases = costbases + round(float(df2['Close'][(counter+internalcounter)]),3)
-                                            sharecount = sharecount + 1
-                                            Valnear = df2['Close'][(counter+internalcounter):(counter+90+internalcounter)]
-                                            if days - counter - internalcounter <= 90:
-                                                Valnear = df2['Close'][(counter+internalcounter):(days-1)]
-                                            maxValnear.append(max(Valnear))
-                                            trade_return.append(((maxValnear[sharecount-1] - round(float(df2['Close'][(counter)]),3))/round(float(df2['Close'][(counter)]),3))*100)
-                                            if df2['Close'][(counter+internalcounter)] < df2['LMA'][(counter+internalcounter)]*0.95:
-                                                largebuy = (maxValnear[sharecount-1] - round(float(df2['Close'][(counter+internalcounter)]),3))/round(float(df2['Close'][(counter+internalcounter)]),3)*100 + largebuy
-                                                largebuycounter = largebuycounter + 1
-                                            else:
-                                                small = (maxValnear[sharecount-1] - round(float(df2['Close'][(counter+internalcounter)]),3))/round(float(df2['Close'][(counter+internalcounter)]),3)*100 + small
-                                                smallcounter = smallcounter + 1
-                                    internalcounter = internalcounter + 1
-                                internalcounter = 0
-        counter = counter + 1
-    TYPValue = TYPValue / (days)
-    outputlist.append(("The last buy date is: ", dates[len(dates)-1]))
-    outputlist.append(("The last price bought for: $", homie[len(homie)-1]))
-    outputlist.append(("The MFI of the last buy: ", round(MFItracker[len(MFItracker)-1],2)))
-    outputlist.append(("The expected sell point is: $", round((lastmax[len(lastmax)-1]-lastmin[len(lastmax)-1])*0.618+homie[len(homie)-1],2)))
-    outputlist.append(("The expected return on the buy: ", round(((((lastmax[len(lastmax)-1]-lastmin[len(lastmax)-1])*0.618+homie[len(homie)-1]-homie[len(homie)-1])/homie[len(homie)-1])*100),3),"%"))
-    outputlist.append(("The average return on the each buy is: ", round((sum(tendies)/len(tendies))*100,3),"%"))
-    sellcounter = 2
-    selldate = []
-    sprice = 0
-    scost = []
-    discount = 0
-    scount = 0
-    while sellcounter < (days - 2):
-        if round(float(df2['MFI'][sellcounter]),2) > 75 or round(float(df2['MFI'][sellcounter+1]),2) > 75 or round(float(df2['MFI'][sellcounter+2]),2) > 75:
-            if df2['Signal Line'][sellcounter] > 0:
-                if (df2['MACD'][sellcounter]) > (df2['Signal Line'][sellcounter]):
-                    if (df2['MACD'][sellcounter-1])-(df2['Signal Line'][sellcounter-1]) > (df2['MACD'][sellcounter-2])-(df2['Signal Line'][sellcounter-2]):
-                        if (df2['MACD'][sellcounter]) -(df2['Signal Line'][sellcounter])> (df2['MACD'][sellcounter-1])-(df2['Signal Line'][sellcounter-1]):
-                            if (df2['MACD'][sellcounter+1])-(df2['Signal Line'][sellcounter+1]) < (df2['MACD'][sellcounter]-df2['Signal Line'][sellcounter]):
-                                if (df2['MACD'][sellcounter+2])-(df2['Signal Line'][sellcounter+2]) < (df2['MACD'][sellcounter+1]-df2['Signal Line'][sellcounter+1]):
-                                    selldate.append(df2.index.date[sellcounter+2])
-                                    scost.append(round(float(df2['Close'][sellcounter+2]),3))
-                                    sprice = sprice + round(float(df2['Close'][(sellcounter + 2)]),3)
-                                    scount = scount + 1
-        sellcounter = sellcounter + 1
-    if sharecount == 0:
-        currentprices = round(float(df2['Close'][(days-1)]),2)
-        outputlist.append(("No Shares."))
-        outputlist.append(("The typical share price during the period was: $", round(TYPValue,2)))
-        outputlist.append(("################################"))
-        outputlist.append(("The MFI 3 days ago was: ", round(float(df2['MFI'][(days - 3)]), 2)))
-        outputlist.append(("The MFI 2 days ago was: ", round(float(df2['MFI'][(days - 2)]), 2)))
-        outputlist.append(("The MFI 1 day ago was: ", round(float(df2['MFI'][(days - 1)]), 2)))
-        outputlist.append(("The current price is: $",currentprices))
-        outputlist.append(("If bought today the sell point would be: $", round((max(df2['Close'][(days - 90):(days-5)])-min(df2['Close'][(days - 90):(days-5)]))*0.618+currentprices),2))
-        outputlist.append(("The realised return would be: ", round((((max(df2['Close'][(days - 90):(days-5)])-min(df2['Close'][(days - 90):(days-5)]))*0.618+currentprices-currentprices)/currentprices)*100,3),"%"))
-        outputlist.append(("################################"))
-        outputlist.append(("The MACD 3 days ago was: ",df2['MACD'][days-3]))
-        outputlist.append(("The MACD 2 days ago was: ",df2['MACD'][days-2]))
-        outputlist.append(("The MACD 1 day ago was: ",df2['MACD'][days-1]))
-        outputlist.append(("The difference 3 days ago was: ", (df2['MACD'][days-3] - df2['Signal Line'][days-3])))
-        outputlist.append(("The difference 2 days ago was: ", (df2['MACD'][days-2] - df2['Signal Line'][days-2])))
-        outputlist.append(("The difference 1 day ago was: ", (df2['MACD'][days-1] - df2['Signal Line'][days-1])))
-        outputlist.append(("The current 100 MA value is: $", df2['LMA'][days-1]))
-        outputlist.append(("The current value over the 100 MA is: ", (df2['Close'][days-1]-df2['LMA'][days-1])/df2['LMA'][days-1]))
-        if round(float(df2['MFI'][days-1]),2) < 30:
-            if df2['MACD'][days-1] < 0:
-                if (df2['MACD'][days-1]) < (df2['Signal Line'][days-1]):
-                    if abs((df2['MACD'][days-1] - df2['Signal Line'][days-1])) < abs((df2['MACD'][days-2] - df2['Signal Line'][days-2])):
-                        if abs(df2['MACD'][days-1]) > abs(df2['MACD'][days-2]):
-                            outputlist.append("--- BIG BUY ---")
-        if factor == 'bitch':  
-            bloop = FibonacciGrapher(CompanyCode, dates, homie, selldate, scost,BBUY, BBUYDate)
-            return bloop
-        else:
-            return outputlist
-    
-    currentprices = round(float(df2['Close'][(days-1)]),2)
-    pscost = costbases / sharecount
-    if largebuycounter > 0:
-        outputlist.append(("The return when bought with +5% discount was: ", round(largebuy / largebuycounter,2),"  (",largebuycounter,")"))
-    if smallcounter > 0:
-        outputlist.append(("The close return for every other purchase: ", round(small / smallcounter,2),"  (",smallcounter,")"))
-    outputlist.append(("Total number of shares bought: ", sharecount))
-    outputlist.append(("Total cost base of shares: $", round(costbases,2)))
-    outputlist.append(("Per share cost base is: $", round(pscost,2)))
-    outputlist.append(("The typical price for shares bought in a similar time are: $", round(bbb/bbbcounter, 2)))
-    outputlist.append(("################################"))
-    outputlist.append(("The MFI 3 days ago was: ", round(float(df2['MFI'][(days - 3)]), 2)))
-    outputlist.append(("The MFI 2 days ago was: ", round(float(df2['MFI'][(days - 2)]), 2)))
-    outputlist.append(("The MFI 1 day ago was: ", round(float(df2['MFI'][(days - 1)]), 2)))
-    outputlist.append(("The current price is: $",currentprices))
-    outputlist.append(("If bought today the sell point would be: $", round((max(df2['Close'][(days - 90):(days-5)])-min(df2['Close'][(days - 90):(days-5)]))*0.618+currentprices,2)))
-    outputlist.append(("The realised return would be: ", round((((max(df2['Close'][(days - 90):(days-5)])-min(df2['Close'][(days - 90):(days-5)]))*0.618+currentprices-currentprices)/currentprices)*100,3),"%"))
-    outputlist.append(("################################"))
-    outputlist.append(("The MACD 3 days ago was: ",round(df2['MACD'][days-3],3)))
-    outputlist.append(("The MACD 2 days ago was: ",round(df2['MACD'][days-2],3)))
-    outputlist.append(("The MACD 1 day ago was: ",round(df2['MACD'][days-1],3)))
-    outputlist.append(("The difference 3 days ago was: ", round((df2['MACD'][days-3] - df2['Signal Line'][days-3]),3)))
-    outputlist.append(("The difference 2 days ago was: ", round((df2['MACD'][days-2] - df2['Signal Line'][days-2]),3)))
-    outputlist.append(("The difference 1 day ago was: ", round((df2['MACD'][days-1] - df2['Signal Line'][days-1]),3)))
-    outputlist.append(("The current 100 MA value is: $", round(df2['LMA'][days-1],3)))
-    outputlist.append(("The current value over the 100 MA is: ", round(((df2['Close'][days-1]-df2['LMA'][days-1])/df2['LMA'][days-1])*100,3),'%'))
-    if round(float(df2['MFI'][days-1]),2) < 30:
-            if df2['MACD'][days-1] < 0:
-                if (df2['MACD'][days-1]) < (df2['Signal Line'][days-1]):
-                    if abs((df2['MACD'][days-1] - df2['Signal Line'][days-1])) < abs((df2['MACD'][days-2] - df2['Signal Line'][days-2])):
-                        if abs(df2['MACD'][days-1]) > abs(df2['MACD'][days-2]):
-                            outputlist.append("--- BIG BUY ---")
+    df1['MFI'] = MFI
+    df1['Mid Line'] = df1['MFI'].mean()
+    df1['SELL'] = df1['Mid Line'] + df1['MFI'].std()
+    df1['BUYER'] = df1['Mid Line'] - df1['MFI'].std()
+    df1['SMA'] = df1.rolling(window=20).mean()['Close']
+    df1['LMA'] = df1.rolling(window=200).mean()['Close']
+    df1['20 Day Volatility'] = df1['Close'].rolling(window=20).std()
+    df1['Top Bollinger Band']=df1['SMA']+2*df1['20 Day Volatility']
+    df1['Bottom Bollinger Band']=df1['SMA']-2*df1['20 Day Volatility']
+    df1['Midway'] = (df1['Top Bollinger Band']+df1['SMA'])/2
+    x = 1
+    MACD_Return = [0]
+    Signal_Return = [0]
+    while x < days:
+        MACD_Return.append((df1['MACD'][x]-df1['MACD'][x-1])/df1['MACD'][x-1])
+        Signal_Return.append((df1['Signal Line'][x]-df1['Signal Line'][x-1])/1)
+        x = x+1
+    df1['MACD Ret'] = MACD_Return
+    df1['Signal Ret'] = Signal_Return
+    x = 3
+    SellDate = []
+    SellPrice = []
+    BuyDate = []
+    BuyPrice = []
+    outputlist = []
+    while x < days:
+        if df1['Open'][x]>df1['Top Bollinger Band'][x]:
+            if df1['Low'][x]<df1['Top Bollinger Band'][x]:
+                if df1['Close'][x] <= df1['Open'][x]:
+                    if df1['MACD'][x]>=df1['Signal Line'][x]:
+                        SellDate.append(df1.index.date[x])
+                        SellPrice.append(df1['Close'][x])
+        if df1['MACD'][x]>df1['Signal Line'][x]:
+            if df1['MACD'][x]<df1['MACD'][x-1]:
+                if df1['MACD'][x]>df1['MACD Ave'][x]:
+                    if df1['MFI'][x]>df1['SELL'][x]:
+                        if (abs(df1['MACD'][x])-abs(df1['Signal Line'][x]))<(abs(df1['MACD'][x-1])-abs(df1['Signal Line'][x-1])):
+                            if (abs(df1['MACD'][x-1])-abs(df1['Signal Line'][x-1]))<(abs(df1['MACD'][x-2])-abs(df1['Signal Line'][x-2])):
+                                if df1['Signal Ret'][x]<df1['Signal Ret'].std()+df1['Signal Ret'].mean():
+                                    if df1['Close'][x]>df1['Midway'][x]:
+                                        SellDate.append(df1.index.date[x])
+                                        SellPrice.append(df1['Close'][x])
+        if df1['Low'][x-1]>df1['Top Bollinger Band'][x-1]:
+            if df1['High'][x]<df1['Top Bollinger Band'][x]:
+                if df1['Close'][x] <= df1['Open'][x]:
+                    if df1['MFI'][x]>=df1['Mid Line'][x]:
+                        SellDate.append(df1.index.date[x])
+                        SellPrice.append(df1['Close'][x])
+
+
+        x = x + 1
+
+
     if factor == 'bitch': 
-        bloop = FibonacciGrapher(CompanyCode, dates, homie, selldate, scost,BBUY, BBUYDate)
+        bloop = FibonacciGrapher(CompanyCode, SellDate, SellPrice, BuyPrice, BuyDate)
         return bloop
     else:
         return outputlist
@@ -569,18 +510,13 @@ def MACD_BuySignal_graphed(selected_dropdown_value):
     CompanyCode = selected_dropdown_value
     stock = pdr.get_data_yahoo(CompanyCode,start=datetime.datetime(2019,9,1), end=date.today())
     days = stock['Close'].count()
-    timer = 0
-    timetrack = []
-    while timer < (days - 33):
-        timetrack.append(0)
-        timer = timer + 1
     df2 = pd.DataFrame(stock, columns = ['Close'])
     df2['26 EMA'] = df2.ewm(span = 26, min_periods = 26).mean()['Close']
     df2['12 EMA'] = df2.ewm(span = 12, min_periods = 12).mean()['Close']
     df2['MACD'] = df2['12 EMA'] - df2['26 EMA']
+    df2['Bro Line'] = df2['MACD'].mean()
     df2['Signal Line'] = df2.ewm(span = 9, min_periods = 9).mean()['MACD']
     df2 = df2.dropna()
-    df2['Zero Line'] = timetrack
     fig = go.Figure()
     if "." in CompanyCode:
         king = ('MACD Graph - '+ CompanyCode)
@@ -589,9 +525,10 @@ def MACD_BuySignal_graphed(selected_dropdown_value):
     fig.add_trace(go.Scatter(x=df2.index,y=df2['MACD'], mode = 'lines',marker=dict(size=1, color="red"),showlegend=False))
     fig.update_xaxes(dtick="M2",tickformat="%d\n%b\n%Y")
     fig.add_trace(go.Scatter(x=df2.index,y=df2['Signal Line'], mode = 'lines',marker=dict(size=1, color="green"),showlegend=False))
-    fig.add_trace(go.Scatter(x=df2.index,y=df2['Zero Line'], mode = 'lines',marker=dict(size=1, color="blue"),showlegend=False))
+    fig.add_trace(go.Scatter(x=df2.index,y=df2['Bro Line'], mode = 'lines',marker=dict(size=1, color="dark red"),showlegend=False))
     fig.update_layout(title=king,xaxis_title="Time",yaxis_title="MACD Value", width=750, height = 550)
     return fig 
+
 
 def MoneyFlowIndex(selected_dropdown_value):
     AbsTP = []
@@ -606,19 +543,9 @@ def MoneyFlowIndex(selected_dropdown_value):
     MFR = []
     Equat = 0
     MFI = [50,50,50,50,50,50,50,50,50,50,50,50,50,50]
-    SellRange = []
-    seller = 0
-    BuyRange = []
-    buyer = 0
     CompanyCode = selected_dropdown_value
     stock = pdr.get_data_yahoo(CompanyCode,start=datetime.datetime(2019,9,1), end=date.today())
     days = stock['Close'].count()
-    while buyer < days:
-        BuyRange.append(30)
-        buyer = buyer + 1
-    while seller < days:
-        SellRange.append(75)
-        seller = seller + 1
     df2 = pd.DataFrame(stock)
     df2['Typical Price'] = (df2['Close'] + df2['High'] + df2['Low'])/3
     AbsTP.append(df2['Typical Price'].iloc[x])
@@ -652,8 +579,9 @@ def MoneyFlowIndex(selected_dropdown_value):
         MFI.append(Equat)
         w = w + 1
     df2['MFI'] = MFI
-    df2['SELL'] = SellRange
-    df2['BUYER'] = BuyRange
+    df2['Mid Line'] = df2['MFI'].mean()
+    df2['SELL'] = df2['Mid Line'] + df2['MFI'].std()
+    df2['BUYER'] = df2['Mid Line'] - df2['MFI'].std()
     fig = go.Figure()
     if "." in CompanyCode:
         king = ('Money Flow Index - '+ CompanyCode)
@@ -663,6 +591,7 @@ def MoneyFlowIndex(selected_dropdown_value):
     fig.update_xaxes(dtick="M2",tickformat="%d\n%b\n%Y")
     fig.add_trace(go.Scatter(x=df2.index,y=df2['BUYER'], mode = 'lines',marker=dict(size=1, color="green"),showlegend=False))
     fig.add_trace(go.Scatter(x=df2.index,y=df2['SELL'], mode = 'lines',marker=dict(size=1, color="red"),showlegend=False))
+    fig.add_trace(go.Scatter(x=df2.index,y=df2['Mid Line'], mode = 'lines',marker=dict(size=1, color="black"),showlegend=False))
     fig.update_layout(title=king,xaxis_title="Time",yaxis_title="MFI Value", width=750, height = 550)
     return fig
 
@@ -679,6 +608,7 @@ def ReturnCalculator(selected_dropdown_value):
         stock30 = pdr.get_data_yahoo(CompanyCode,start=(date.today() - datetime.timedelta(days=30)), end=(date.today() - datetime.timedelta(days=30)))
         outputlist.append(('The 1 Month Return is: ',round((((stocktoday['Adj Close'][0]-stock30['Adj Close'][0])/stock30['Adj Close'][0])*100),2),'%'))
     except KeyError:
+        print('fuck')
         stock30 = pdr.get_data_yahoo(CompanyCode,start=(date.today() - datetime.timedelta(days=30+3)), end=(date.today() - datetime.timedelta(days=30+3)))
         outputlist.append(('The 1 Month Return is: ',round((((stocktoday['Adj Close'][0]-stock30['Adj Close'][0])/stock30['Adj Close'][0])*100),2),'%'))
     try:
@@ -822,7 +752,7 @@ def VolatilityGrapher(selected_dropdown_value):
     df1['Annual_Volatility30'] = (df1['30 Day Volatility'])*(252**(1/2))
     title_graph = "Historical Volatility Grapher - "+CompanyCode
     fig = go.Figure()
-    fig.update_layout(title=title_graph, width=1000, height = 600)
+    fig.update_layout(title=title_graph, width=1000, height = 400)
     fig.update_yaxes(title = "Annual Volatility Equivalent")
     fig.add_trace(go.Scatter(x=df1.index,y=df1['Annual_Volatility252'], mode = 'lines',marker=dict(size=1, color="blue"),showlegend=True,name="252 Day"))
     fig.add_trace(go.Scatter(x=df1.index,y=df1['Annual_Volatility180'], mode = 'lines',marker=dict(size=1, color="orange"),showlegend=True,name="180 Day"))
@@ -907,6 +837,7 @@ app.layout = html.Div([
         ],style={'width': '20%', 'float': 'left','display': 'inline-block','border':'solid', 'padding-left':'2%', 'padding-right':'2%','padding-bottom':'2%'}),
 
     html.Div([
+        dcc.Graph(id='Bollinger-graph'),
         dcc.Graph(id='Volatility-graph')
         ],style={'width': '70%', 'float': 'right','display': 'inline-block','border':'solid', 'padding-right':'2%','padding-bottom':'2%'})
 
@@ -991,6 +922,10 @@ def update_stonker(selected_dropdown_value):
     fig = VolatilityGrapher(selected_dropdown_value)
     return fig
 
+@app.callback(Output('Bollinger-graph','figure'),[Input('input','value')])
+def update_stonker(selected_dropdown_value):
+    fig = BollingerBands(selected_dropdown_value)
+    return fig
 
 if __name__ == '__main__':
     app.run_server(debug=True)

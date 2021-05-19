@@ -471,7 +471,11 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
     BuyDate = []
     BuyPrice = []
     outputlist = []
-    while x < days:
+    BuyCounter = 0
+    BuyReturn = 0
+    OtherBuyReturn = 0
+    OtherBuyCounter = 0
+    while x < days-10:
         if df1['Open'][x]>df1['Top Bollinger Band'][x]:
             if df1['Low'][x]<df1['Top Bollinger Band'][x]:
                 if df1['Close'][x] <= df1['Open'][x]:
@@ -494,9 +498,29 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
                     if df1['MFI'][x]>=df1['Mid Line'][x]:
                         SellDate.append(df1.index.date[x])
                         SellPrice.append(df1['Close'][x])
-
+                        
+        if df1['Low'][x]<df1['Bottom Bollinger Band'][x]:
+            if df1['Low'][x]<(df1['Low'][x-1])*0.99:
+                if df1['Low'][x]<(df1['Low'][x-2])*0.99:
+                    BuyDate.append(df1.index.date[x])
+                    BuyPrice.append(df1['Low'][x])
+                    BuyReturn = BuyReturn + ((max(df1['High'][x+1:x+9])-df1['Low'][x])/df1['Low'][x])
+                    BuyCounter = BuyCounter + 1
 
         x = x + 1
+    x = 30
+    while x < days-30:
+        high = max(df1['High'][x-29:x])
+        low = min(df1['Low'][x-29:x])
+        if df1['Close'][x] < high*0.9:
+            OtherBuyReturn = OtherBuyReturn + ((max(df1['High'][x+1:x+9])-df1['Close'][x])/df1['Close'][x])
+            OtherBuyCounter = OtherBuyCounter + 1
+            x = x + 29
+        x = x + 1
+    outputlist.append((""))
+    outputlist.append((""))
+    outputlist.append(("Buy Strategy (green dots):  ",round(BuyReturn/BuyCounter,4)))
+    outputlist.append(("Buy every 30 days if 10% under last 30 day high:  ",round(OtherBuyReturn/OtherBuyCounter,4)))
 
 
     if factor == 'bitch': 
@@ -801,17 +825,7 @@ app.layout = html.Div([
 
     html.Div([
         html.H4('Returns'),
-        html.Table(id = 'my-returns')
-        
-        ],style={'width': '20%', 'float': 'left','display': 'inline-block','border':'solid', 'padding-left':'5%','padding-bottom':'2%'}),
-    html.Div([
-        html.H4('Fundamentals'),
-        html.Table(id = 'my-fundamentals')
-        
-        ],style={'width': '70%', 'float': 'right','display': 'inline-block','border':'solid', 'padding-right':'2%','padding-bottom':'2%'}),
-    
-    html.Div([
-        html.H4('Option Pricing'),
+        html.Table(id = 'my-returns'),html.H4('Option Pricing'),
         dcc.Input(id='input-1-state', type='text', placeholder='C or P'),
         dcc.Input(id='input-2-state', type='number', placeholder='Strike Price'),
         dcc.Input(id='input-3-state', type='number', placeholder='Days to Expiry'),
@@ -820,26 +834,26 @@ app.layout = html.Div([
         dcc.Input(id='input-6-state', type='number', placeholder='Binomial Steps'),
         dcc.Input(id='input-7-state', type='number', placeholder='Volatility'),
         html.Button(id='submit-button-state', n_clicks=0, children='Calculate'),
-        html.Div(id='output-state')
+        html.Div(id='output-state'),
+        html.H4('Volatility'),
+        html.Table(id = 'my-volatility')
         
-        ],style={'width': '20%', 'float': 'left','display': 'inline-block','border':'solid', 'padding-left':'5%','padding-bottom':'2%'}),
+        ],style={'width': '20%', 'float': 'left','display': 'inline-block','padding-left':'5%','padding-bottom':'2%'}),
+    html.Div([
+        html.H4('Fundamentals'),
+        html.Table(id = 'my-fundamentals')
+        
+        ],style={'width': '70%', 'float': 'right','display': 'inline-block','padding-right':'2%','padding-bottom':'2%'}),
 
     html.Div([
         html.Table(id = 'my-profile')
         
-        ],style={'width': '70%', 'float': 'right','display': 'inline-block','border':'solid', 'padding-right':'2%','padding-bottom':'2%','padding-top':'2%'}),
-
-    
-    html.Div([
-        html.H4('Volatility'),
-        html.Table(id = 'my-volatility')
-        
-        ],style={'width': '20%', 'float': 'left','display': 'inline-block','border':'solid', 'padding-left':'2%', 'padding-right':'2%','padding-bottom':'2%'}),
+        ],style={'width': '70%', 'float': 'right','display': 'inline-block','padding-right':'2%','padding-bottom':'2%','padding-top':'2%'}),
 
     html.Div([
         dcc.Graph(id='Bollinger-graph'),
         dcc.Graph(id='Volatility-graph')
-        ],style={'width': '70%', 'float': 'right','display': 'inline-block','border':'solid', 'padding-right':'2%','padding-bottom':'2%'})
+        ],style={'width': '70%', 'float': 'right','display': 'inline-block','padding-right':'2%','padding-bottom':'2%'})
 
 ])
 
@@ -929,5 +943,3 @@ def update_stonker(selected_dropdown_value):
 
 if __name__ == '__main__':
     app.run_server(debug=True)
-
-    

@@ -144,7 +144,7 @@ def Fundamentals(selected_dropdown_value):
     return df
 
 #This is the part of the code that takes buy points and displays them
-def FibonacciGrapher(CompanyCode, SellDate, SellPrice, BuyPrice, BuyDate): 
+def FibonacciGrapher(CompanyCode, SellDate, SellPrice, SellDate1, SellPrice1, BuyPrice, BuyDate): 
     CompanyCode = CompanyCode
     x = 0
     y = 0
@@ -287,6 +287,8 @@ def FibonacciGrapher(CompanyCode, SellDate, SellPrice, BuyPrice, BuyDate):
     fig.add_trace(go.Scatter(x=df2['Dates'],y=df2['BuyPrice'], mode = 'markers',marker=dict(size=12, color="green"),showlegend=False))
     df3 = pd.DataFrame(data = {'Dates':SellDate,'SellPrice':SellPrice})
     fig.add_trace(go.Scatter(x=df3['Dates'],y=df3['SellPrice'], mode = 'markers',marker=dict(size=12, color="Red"),showlegend=False))
+    df4 = pd.DataFrame(data = {'Dates1':SellDate1,'SellPrice1':SellPrice1})
+    fig.add_trace(go.Scatter(x=df4['Dates1'],y=df4['SellPrice1'], mode = 'markers',marker=dict(size=12, color="Orange"),showlegend=False))
     fig.update_xaxes(dtick="M2",tickformat="%d\n%b\n%Y")
     fig.add_trace(go.Scatter(x=df1.index,y=df1['LMA'], mode = 'lines',marker=dict(size=1, color="orange"),showlegend=False))
     fig.add_trace(go.Scatter(x=df1.index,y=df1['SMA'], mode = 'lines',marker=dict(size=1, color="dark grey"),showlegend=False))
@@ -468,6 +470,8 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
     x = 3
     SellDate = []
     SellPrice = []
+    SellDate1 = []
+    SellPrice1 = []
     BuyDate = []
     BuyPrice = []
     outputlist = []
@@ -475,13 +479,21 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
     BuyReturn = 0
     OtherBuyReturn = 0
     OtherBuyCounter = 0
+    SellReturn1 = 0
+    SellCounter1 = 0
+    SellReturn2 = 0
+    SellCounter2 = 0
+    SellReturn3 = 0
+    SellCounter3 = 0
     while x < days-10:
         if df1['Open'][x]>df1['Top Bollinger Band'][x]:
             if df1['Low'][x]<df1['Top Bollinger Band'][x]:
                 if df1['Close'][x] <= df1['Open'][x]:
                     if df1['MACD'][x]>=df1['Signal Line'][x]:
-                        SellDate.append(df1.index.date[x])
-                        SellPrice.append(df1['Close'][x])
+                        SellDate1.append(df1.index.date[x])
+                        SellPrice1.append(df1['Close'][x])
+                        SellReturn1 = SellReturn1 + ((min(df1['Low'][x+1:x+9])-df1['High'][x])/df1['High'][x])
+                        SellCounter1 = SellCounter1 + 1
         if df1['MACD'][x]>df1['Signal Line'][x]:
             if df1['MACD'][x]<df1['MACD'][x-1]:
                 if df1['MACD'][x]>df1['MACD Ave'][x]:
@@ -492,12 +504,16 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
                                     if df1['Close'][x]>df1['Midway'][x]:
                                         SellDate.append(df1.index.date[x])
                                         SellPrice.append(df1['Close'][x])
+                                        SellReturn2 = SellReturn2 + ((min(df1['Low'][x+1:x+9])-df1['High'][x])/df1['High'][x])
+                                        SellCounter2 = SellCounter2 + 1
         if df1['Low'][x-1]>df1['Top Bollinger Band'][x-1]:
             if df1['High'][x]<df1['Top Bollinger Band'][x]:
                 if df1['Close'][x] <= df1['Open'][x]:
                     if df1['MFI'][x]>=df1['Mid Line'][x]:
                         SellDate.append(df1.index.date[x])
                         SellPrice.append(df1['Close'][x])
+                        SellReturn3 = SellReturn3 + ((min(df1['Low'][x+1:x+9])-df1['High'][x])/df1['High'][x])
+                        SellCounter3 = SellCounter3 + 1
                         
         if df1['Low'][x]<df1['Bottom Bollinger Band'][x]:
             if df1['Low'][x]<(df1['Low'][x-1])*0.99:
@@ -517,14 +533,31 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
             OtherBuyCounter = OtherBuyCounter + 1
             x = x + 29
         x = x + 1
-    outputlist.append((""))
-    outputlist.append((""))
-    outputlist.append(("Buy Strategy (green dots):  ",round(BuyReturn/BuyCounter,4)))
-    outputlist.append(("Buy every 30 days if 10% under last 30 day high:  ",round(OtherBuyReturn/OtherBuyCounter,4)))
-
-
+    outputlist.append(("""The buy strategy works off buying the low when it goes below the bottom bollinger band. As long as
+                        the low is 1% lower than the last 2 lows."""))
+    try:
+        outputlist.append(("Buy Strategy (green dots):  ",round(BuyReturn/BuyCounter,4)))
+    except:
+        outputlist.append(("Buy Strategy (green dots):  N/A"))
+    try:
+        outputlist.append(("Buy/Hold Strategy - Buy every 30 days if 10% under last 30 day high:  ",round(OtherBuyReturn/OtherBuyCounter,4)))
+    except:
+        outputlist.append(("Buy/Hold Strategy - Buy every 30 days if 10% under last 30 day high:  N/A"))
+    try:
+        outputlist.append(("(Orange) Sell strategy where the sell is triggered whenever the open is above the top band and the low is below the top band. The next 10 day low return is:  ",round(SellReturn1/SellCounter1,4)," and count: ",SellCounter1))
+    except:
+        outputlist.append(("Sell strategy where the sell is triggered whenever the open is above the top band and the low is below the top band. The next 10 day low return is:  N/A"))
+    try:  
+        outputlist.append(("Sell strategy where the MACD and MFI are combined along with the use of the bolinger bands. The next 10 day low return is:  ",round(SellReturn2/SellCounter2,4)," and count: ",SellCounter2))
+    except:
+        outputlist.append(("Sell strategy where the MACD and MFI are combined along with the use of the bolinger bands. The next 10 day low return is:  N/A"))
+    try:
+        outputlist.append(("Sell strategy where yesterday the tick was totally above the top bollinger band and today the high was below. The next 10 day low return is:  ",round(SellReturn3/SellCounter3,4)," and count: ",SellCounter3))
+    except:
+        outputlist.append(("Sell strategy where yesterday the tick was totally above the top bollinger band and today the high was below. The next 10 day low return is: N/A"))
+    
     if factor == 'bitch': 
-        bloop = FibonacciGrapher(CompanyCode, SellDate, SellPrice, BuyPrice, BuyDate)
+        bloop = FibonacciGrapher(CompanyCode, SellDate, SellPrice, SellDate1, SellPrice1, BuyPrice, BuyDate)
         return bloop
     else:
         return outputlist
@@ -825,7 +858,8 @@ app.layout = html.Div([
 
     html.Div([
         html.H4('Returns'),
-        html.Table(id = 'my-returns'),html.H4('Option Pricing'),
+        html.Table(id = 'my-returns',style={'padding-bottom': '15%'}),
+        html.H4('Option Pricing'),
         dcc.Input(id='input-1-state', type='text', placeholder='C or P'),
         dcc.Input(id='input-2-state', type='number', placeholder='Strike Price'),
         dcc.Input(id='input-3-state', type='number', placeholder='Days to Expiry'),
@@ -834,7 +868,7 @@ app.layout = html.Div([
         dcc.Input(id='input-6-state', type='number', placeholder='Binomial Steps'),
         dcc.Input(id='input-7-state', type='number', placeholder='Volatility'),
         html.Button(id='submit-button-state', n_clicks=0, children='Calculate'),
-        html.Div(id='output-state'),
+        html.Div(id='output-state',style={'padding-bottom': '15%'}),
         html.H4('Volatility'),
         html.Table(id = 'my-volatility')
         
@@ -869,7 +903,7 @@ def update_graph(selected_dropdown_value, signalinput):
 def generate_output_list(selected_dropdown_value, signalinput):
     outputlist = TradingAlgo(selected_dropdown_value, 'dog', signalinput)
     # Header
-    return [html.Tr(html.Th('Output List'))] + [html.Tr(html.Td(output)) for output in outputlist]
+    return html.Table([html.Tr(html.Th('Output List'))] + [html.Tr(html.Td(output)) for output in outputlist],style={'border-spacing': '13px'})
 
 @app.callback(Output('macd-graph','figure'),[Input('input','value')])
 def update_macd(selected_dropdown_value):

@@ -14,20 +14,6 @@ import plotly.graph_objects as go
 import plotly
 from bs4 import BeautifulSoup
 
-def ProfileScraper(selected_dropdown_value):
-    CompanyCode = selected_dropdown_value
-    urlprofile = 'https://au.finance.yahoo.com/quote/'+CompanyCode+'/profile?p='+CompanyCode
-    profilesoup = BeautifulSoup((requests.get(urlprofile).text),"lxml")
-
-    companyprofile = []
-    companyprofile.append(CompanyCode)
-    titleProfile = profilesoup.findAll('p', {'class': "Mt(15px) Lh(1.6)"})
-    for title in titleProfile:
-        companyprofile.append(title.text)
-        
-    return companyprofile
-
-
 def Fundamentals(selected_dropdown_value):
     CompanyCode = selected_dropdown_value
     try:
@@ -830,6 +816,9 @@ colors = {
 
 #This is the total layout of the app.
 app.layout = html.Div([
+    html.Div([
+        html.A("Link to ETH/AUD Trading dashboard", href='https://eth-trading-bot.herokuapp.com/', target="_blank")
+        ],style={'width': '65%','display': 'inline-block'}),
     #breaking it down this way means so far there will be 2 sections to the app
     html.Div([
         html.H4('Chart with Buy/Sell Signals'),
@@ -880,11 +869,6 @@ app.layout = html.Div([
         ],style={'width': '70%', 'float': 'right','display': 'inline-block','padding-right':'2%','padding-bottom':'2%'}),
 
     html.Div([
-        html.Table(id = 'my-profile')
-        
-        ],style={'width': '70%', 'float': 'right','display': 'inline-block','padding-right':'2%','padding-bottom':'2%','padding-top':'2%'}),
-
-    html.Div([
         dcc.Graph(id='Bollinger-graph'),
         dcc.Graph(id='Volatility-graph')
         ],style={'width': '70%', 'float': 'right','display': 'inline-block','padding-right':'2%','padding-bottom':'2%'})
@@ -928,13 +912,6 @@ def generate_fundamentaltable(selected_dropdown_value):
     table = Fundamentals(selected_dropdown_value)
     # Header
     return html.Table([html.Tr([html.Th(col) for col in table.columns])] + [html.Tr([html.Td(table.iloc[i][col]) for col in table.columns]) for i in range(0,len(table.EPS))],style={'border-spacing': '13px'})
-
-# for the output-list
-@app.callback(Output('my-profile', 'children'), [Input('input', 'value')])
-def company_profile(selected_dropdown_value):
-    companyprofile = ProfileScraper(selected_dropdown_value)
-    # Header
-    return [html.Tr(html.Th('Company Profile'))] + [html.Tr(html.Td(output)) for output in companyprofile]
 
 @app.callback(Output('output-state', 'children'),
               Input('submit-button-state', 'n_clicks'),

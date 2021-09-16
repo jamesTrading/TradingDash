@@ -13,120 +13,76 @@ import math
 import plotly.graph_objects as go
 import plotly
 from bs4 import BeautifulSoup
+import yfinance as yf
 
 def Fundamentals(selected_dropdown_value):
     CompanyCode = selected_dropdown_value
     try:
-        stocktoday = pdr.get_data_yahoo(CompanyCode,start=date.today(), end=date.today())
-    except KeyError:
-        stocktoday = pdr.get_data_yahoo(CompanyCode,start=(datetime.datetime.now() - datetime.timedelta(days=2)), end=(datetime.datetime.now() - datetime.timedelta(days=2)))
+        stocktoday = pdr.get_data_yahoo(selected_dropdown_value,start=date.today(), end=date.today())
+    except:
+        stocktoday = pdr.get_data_yahoo(selected_dropdown_value,start=(datetime.datetime.now() - datetime.timedelta(days=2)), end=(datetime.datetime.now() - datetime.timedelta(days=2)))
     CurrentPrice = stocktoday['Close'][0]
     
-    urlcashflow = 'https://www.finance.yahoo.com/quote/'+CompanyCode+'/cash-flow?p='+CompanyCode
-    cashsoup = BeautifulSoup((requests.get(urlcashflow).text),"lxml")
+    Code = yf.Ticker(selected_dropdown_value)
+    Financials = Code.financials
+    Balances = Code.balance_sheet
+    Cashflow = Code.cashflow
+    print(Financials)
+    print(Balances)
+    print(Cashflow)
 
-    urlincome = 'https://www.finance.yahoo.com/quote/'+CompanyCode+'/financials?p='+CompanyCode
-    incomesoup = BeautifulSoup((requests.get(urlincome).text),"lxml")
-
-    urlbalancesheet = 'https://www.finance.yahoo.com/quote/'+CompanyCode+'/balance-sheet?p='+CompanyCode
-    balancesoup = BeautifulSoup((requests.get(urlbalancesheet).text),"lxml")
-    
-    titleBalancesheet = balancesoup.findAll('div', {'class': "D(tbc) Ta(start) Pend(15px)--mv2 Pend(10px) Bxz(bb) Py(8px) Bdends(s) Bdbs(s) Bdstarts(s) Bdstartw(1px) Bdbw(1px) Bdendw(1px) Bdc($seperatorColor) Pos(st) Start(0) Bgc($lv2BgColor) fi-row:h_Bgc($hoverBgColor) Pstart(15px)--mv2 Pstart(10px)"})
-    for title in titleBalancesheet:
-        if 'Common Stock Equity' in title.text:
-            shareholderequity = ([div.text for div in title.findNextSiblings(attrs={'data-test': 'fin-col'})])
-            shareholderequity = [int(item.replace(',','')) for item in shareholderequity]
-        if 'Total Liabilities Net Minority Interest' in title.text:
-            Liability = ([div.text for div in title.findNextSiblings(attrs={'data-test': 'fin-col'})])
-            Liability = [int(item.replace(',','')) for item in Liability]
-        if 'Total Assets' in title.text:
-            totalassets = ([div.text for div in title.findNextSiblings(attrs={'data-test': 'fin-col'})])
-            totalassets = [int(item.replace(',','')) for item in totalassets]
-        if 'Ordinary Shares Number' in title.text:
-            Sharecount = ([div.text for div in title.findNextSiblings(attrs={'data-test': 'fin-col'})])
-            Sharecount = [int(item.replace(',','')) for item in Sharecount]
-
-    titleFinancial = incomesoup.findAll('div', {'class': "D(tbc) Ta(start) Pend(15px)--mv2 Pend(10px) Bxz(bb) Py(8px) Bdends(s) Bdbs(s) Bdstarts(s) Bdstartw(1px) Bdbw(1px) Bdendw(1px) Bdc($seperatorColor) Pos(st) Start(0) Bgc($lv2BgColor) fi-row:h_Bgc($hoverBgColor) Pstart(15px)--mv2 Pstart(10px)"})
-    for title in titleFinancial:
-        if 'Normalized EBITDA' in title.text:
-            EBITDA = ([div.text for div in title.findNextSiblings(attrs={'data-test': 'fin-col'})])
-            EBITDA.pop(0)
-            EBITDA = [int(item.replace(',','')) for item in EBITDA]
-        if 'Net Income Common Stockholders' in title.text:
-            NetIncome = ([div.text for div in title.findNextSiblings(attrs={'data-test': 'fin-col'})])
-            NetIncome.pop(0)
-            NetIncome = [int(item.replace(',','')) for item in NetIncome]
-            
-    titleCashflow = cashsoup.findAll('div', {'class': "D(tbc) Ta(start) Pend(15px)--mv2 Pend(10px) Bxz(bb) Py(8px) Bdends(s) Bdbs(s) Bdstarts(s) Bdstartw(1px) Bdbw(1px) Bdendw(1px) Bdc($seperatorColor) Pos(st) Start(0) Bgc($lv2BgColor) fi-row:h_Bgc($hoverBgColor) Pstart(15px)--mv2 Pstart(10px)"})
-    for title in titleCashflow:
-        if 'Operating Cash Flow' in title.text:
-            OperatingCashflow2 = ([div.text for div in title.findNextSiblings(attrs={'data-test': 'fin-col'})])
-            OperatingCashflow2.pop(0)
-            if OperatingCashflow2[0] == '-':
-                OperatingCashflow2 = ['-' for item in OperatingCashflow2]
-            else:
-                OperatingCashflow2 = [int(item.replace(',','')) for item in OperatingCashflow2]
-        if 'Cash Flows from Used in Operating Activities Direct' in title.text:
-            OperatingCashflow1 = ([div.text for div in title.findNextSiblings(attrs={'data-test': 'fin-col'})])
-            OperatingCashflow1.pop(0)
-            OperatingCashflow1 = [int(item.replace(',','')) for item in OperatingCashflow1]
-        if 'Free Cash Flow' in title.text:
-            FreeCashflow = ([div.text for div in title.findNextSiblings(attrs={'data-test': 'fin-col'})])
-            FreeCashflow.pop(0)
-            FreeCashflow = [int(item.replace(',','')) for item in FreeCashflow]
-    EPS = []
-    y = 0
-    OperatingCashflow = []
-    try:
-        if OperatingCashflow2[0] == '-':
-            OperatingCashflow = OperatingCashflow1
-        else:
-            OperatingCashflow = OperatingCashflow2
-    except:
-        try:
-            OperatingCashflow = OperatingCashflow1
-        except:
-            OperatingCashflow = ['-']
-    for element in NetIncome:
-        EPS.append(round(element/Sharecount[y],3))
-        y = y + 1
-    x = 0
-    EPSGrowth = []
+    count = 0
+    Number_Of_Shares = []
+    Net_Income = []
+    Shareholder_Equity = []
+    Total_Assets = []
+    Total_Liability = []
+    Gross_Margin = []
+    Operating_Cashflow = []
+    Freecashflow = []
+    EBITDA = []
+    EV = []
+    Net_Debt = []
     ROE = []
     ROA = []
     DTE = []
-    while x < (len(EPS)-1):
-        percent = ((EPS[x]-EPS[x+1])/abs(EPS[x+1]))*100
-        EPSGrowth.append((round(percent,3) , '%'))
-        x = x + 1
-    EPSGrowth.append('-')
-    z = 0
-    EBITDAGrowth = []
-    a = len(Liability) - 1
-    while a >= 0:
-        if a == len(NetIncome):
-            ROE.append(round(NetIncome[a-1]/shareholderequity[a],3))
-            ROA.append(round(NetIncome[a-1]/totalassets[a],3))
-            DTE.append(round(Liability[a]/shareholderequity[a],3))
-        else:
-            ROE.append(round(NetIncome[a]/shareholderequity[a],3))
-            ROA.append(round(NetIncome[a]/totalassets[a],3))
-            DTE.append(round(Liability[a]/shareholderequity[a],3))
-        a = a - 1
-    try:
-        len(EBITDA)
-    except:
-        EBITDA = []
-        while z < len(EPS):
-            EBITDA.append('N/A')
-            z = z + 1
-    big = len(Liability)
+    EPS = []
     dex = []
-    while big > 0:
-        dex.append(date.today().year-big+1)
-        big = big - 1
-    df = pd.DataFrame({CompanyCode: dex, 'EPS': list(reversed(EPS)), 'EPS Growth': list(reversed(EPSGrowth)), 'Net Income': list(reversed(NetIncome)),'ROE': ROE, 'ROA': ROA,'Debt to Equity':DTE, 'Shareholder Equity': list(reversed(shareholderequity)),
-                       'Shares':list(reversed(Sharecount)),'Operating Cashflow': list(reversed(OperatingCashflow)), 'Free Cashflow': list(reversed(FreeCashflow)), 'EBITDA': list(reversed(EBITDA))},index=range(date.today().year-len(Liability)+1,date.today().year+1))
+    Interest_Expense = []
+    Long_Debt = []
+    Longer_Debt = []
+    while count < 4:
+        if Financials.loc['Interest Expense'][count] == None:
+            Interest_Expense.append(0)
+        else:
+            Interest_Expense.append(Financials.loc['Interest Expense'][count])
+        try:
+            Long_Debt.append(Balances.loc['Short Long Term Debt'][count])
+        except:
+            Long_Debt.append(0)
+        try:
+            Longer_Debt.append(Balances.loc['Long Term Debt'][count])
+        except:
+            Longer_Debt.append(0)
+        Number_Of_Shares.append(float(Balances.loc['Common Stock'][count]/1000))
+        Net_Income.append(float(Financials.loc['Net Income'][count]/1000))
+        Shareholder_Equity.append(float(Balances.loc['Total Stockholder Equity'][count]/1000))
+        Total_Assets.append(Balances.loc['Total Assets'][count])
+        Total_Liability.append(Balances.loc['Total Liab'][count])
+        Gross_Margin.append((((Financials.loc['Total Revenue'][count]-Financials.loc['Cost Of Revenue'][count])/Financials.loc['Total Revenue'][count]))*100)
+        Operating_Cashflow.append(float(Cashflow.loc['Total Cash From Operating Activities'][count]/1000))
+        Freecashflow.append(float(((Operating_Cashflow[count]*1000)+Cashflow.loc['Capital Expenditures'][count])/1000))
+        EBITDA.append(float(((Net_Income[count]*1000)-Interest_Expense[count]+Financials.loc['Income Tax Expense'][count]+Cashflow.loc['Depreciation'][count])/1000))
+        Net_Debt.append(Long_Debt[count]+Longer_Debt[count]-Balances.loc['Cash'][count])
+        ROE.append(round(Net_Income[count]/Shareholder_Equity[count],3))
+        ROA.append(round((Net_Income[count]*1000)/Total_Assets[count],3))
+        DTE.append(round(Total_Liability[count]/(Shareholder_Equity[count]*1000),3))
+        EPS.append(round(Net_Income[count]/Number_Of_Shares[count],3))
+        dex.append(date.today().year-count)
+        count = count + 1
+    df = pd.DataFrame({CompanyCode: dex, 'EPS': EPS,'ROE': ROE, 'ROA': ROA, 'Net Income ("000)': Net_Income,
+                       'Debt to Equity':DTE, 'Shareholder Equity ("000)': Shareholder_Equity,'Shares ("000)':Number_Of_Shares,
+                       'Operating Cashflow ("000)':Operating_Cashflow, 'Free Cashflow ("000)': Freecashflow, 'EBITDA ("000)': EBITDA})
     return df
 
 #This is the part of the code that takes buy points and displays them
@@ -805,7 +761,7 @@ def VolatilityGrapher(selected_dropdown_value):
     return fig
 
 #this creates the app -- imports the stylesheet
-app = dash.Dash(__name__)
+app = dash.Dash(__name__,meta_tags=[{'property':'og:image','content':'https://i.ibb.co/P5RkK55/James-Charge-1.png'}])
 server = app.server
 
 #This sets the apps basic colours

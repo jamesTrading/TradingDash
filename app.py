@@ -15,6 +15,14 @@ import plotly
 from bs4 import BeautifulSoup
 import yfinance as yf
 
+def Profile(selected_dropdown_value):
+    CompanyCode = selected_dropdown_value    
+    Code = yf.Ticker(selected_dropdown_value)
+    Info = Code.info
+    outputlist = []
+    outputlist.append(Info['longBusinessSummary'])
+    return outputlist
+
 def Fundamentals(selected_dropdown_value):
     CompanyCode = selected_dropdown_value
     try:
@@ -27,10 +35,6 @@ def Fundamentals(selected_dropdown_value):
     Financials = Code.financials
     Balances = Code.balance_sheet
     Cashflow = Code.cashflow
-    print(Financials)
-    print(Balances)
-    print(Cashflow)
-
     count = 0
     Number_Of_Shares = []
     Net_Income = []
@@ -51,6 +55,7 @@ def Fundamentals(selected_dropdown_value):
     Interest_Expense = []
     Long_Debt = []
     Longer_Debt = []
+    PS_DIV = []
     while count < 4:
         if Financials.loc['Interest Expense'][count] == None:
             Interest_Expense.append(0)
@@ -79,10 +84,14 @@ def Fundamentals(selected_dropdown_value):
         DTE.append(round(Total_Liability[count]/(Shareholder_Equity[count]*1000),3))
         EPS.append(round(Net_Income[count]/Number_Of_Shares[count],3))
         dex.append(date.today().year-count)
+        try:
+            PS_DIV.append(round(abs(Cashflow.loc['Dividends Paid'][count]/(Number_Of_Shares[count]*1000)),3))
+        except:
+            PS_DIV.append(0)
         count = count + 1
     df = pd.DataFrame({CompanyCode: dex, 'EPS': EPS,'ROE': ROE, 'ROA': ROA, 'Net Income ("000)': Net_Income,
                        'Debt to Equity':DTE, 'Shareholder Equity ("000)': Shareholder_Equity,'Shares ("000)':Number_Of_Shares,
-                       'Operating Cashflow ("000)':Operating_Cashflow, 'Free Cashflow ("000)': Freecashflow, 'EBITDA ("000)': EBITDA})
+                       'Operating Cashflow ("000)':Operating_Cashflow, 'Free Cashflow ("000)': Freecashflow, 'EBITDA ("000)': EBITDA, 'Dividend P/S':PS_DIV})
     return df
 
 #This is the part of the code that takes buy points and displays them
@@ -820,7 +829,8 @@ app.layout = html.Div([
         ],style={'width': '20%', 'float': 'left','display': 'inline-block','padding-left':'5%','padding-bottom':'2%'}),
     html.Div([
         html.H4('Fundamentals'),
-        html.Table(id = 'my-fundamentals')
+        html.Table(id = 'my-fundamentals'),
+        html.Table(id = 'my-profile')
         
         ],style={'width': '70%', 'float': 'right','display': 'inline-block','padding-right':'2%','padding-bottom':'2%'}),
 
@@ -868,6 +878,13 @@ def generate_fundamentaltable(selected_dropdown_value):
     table = Fundamentals(selected_dropdown_value)
     # Header
     return html.Table([html.Tr([html.Th(col) for col in table.columns])] + [html.Tr([html.Td(table.iloc[i][col]) for col in table.columns]) for i in range(0,len(table.EPS))],style={'border-spacing': '13px'})
+
+@app.callback(Output('my-profile', 'children'), [Input('input', 'value')])
+def generate_profile(selected_dropdown_value):
+    outputlist = Profile(selected_dropdown_value)
+    # Header
+    return [html.Tr(html.Th('Company Profile'))] + [html.Tr(html.Td(output)) for output in outputlist]
+
 
 @app.callback(Output('output-state', 'children'),
               Input('submit-button-state', 'n_clicks'),

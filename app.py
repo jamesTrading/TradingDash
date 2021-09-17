@@ -444,8 +444,8 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
                     if df1['MACD'][x]>=df1['Signal Line'][x]:
                         SellDate1.append(df1.index.date[x])
                         SellPrice1.append(df1['Close'][x])
-                        if x + 10>days:
-                            continue
+                        if x + 11>days:
+                            print("")
                         else:
                             SellReturn1 = SellReturn1 + ((min(df1['Low'][x+1:x+9])-df1['High'][x])/df1['High'][x])
                             SellCounter1 = SellCounter1 + 1
@@ -459,8 +459,8 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
                                     if df1['Close'][x]>df1['Midway'][x]:
                                         SellDate.append(df1.index.date[x])
                                         SellPrice.append(df1['Close'][x])
-                                        if x + 10>days:
-                                            continue
+                                        if x + 11>days:
+                                            print("")
                                         else:
                                             SellReturn2 = SellReturn2 + ((min(df1['Low'][x+1:x+9])-df1['High'][x])/df1['High'][x])
                                             SellCounter2 = SellCounter2 + 1
@@ -470,8 +470,8 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
                     if df1['MFI'][x]>=df1['Mid Line'][x]:
                         SellDate.append(df1.index.date[x])
                         SellPrice.append(df1['Close'][x])
-                        if x + 10>days:
-                            continue
+                        if x + 11>days:
+                            print("")
                         else:
                             SellReturn3 = SellReturn3 + ((min(df1['Low'][x+1:x+9])-df1['High'][x])/df1['High'][x])
                             SellCounter3 = SellCounter3 + 1
@@ -481,8 +481,8 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
                 if df1['Low'][x]<(df1['Low'][x-2])*0.99:
                     BuyDate.append(df1.index.date[x])
                     BuyPrice.append(df1['Low'][x])
-                    if x + 10>days:
-                        continue
+                    if x + 11>days:
+                        print("")
                     else:
                         BuyReturn = BuyReturn + ((max(df1['High'][x+1:x+9])-df1['Low'][x])/df1['Low'][x])
                         BuyCounter = BuyCounter + 1

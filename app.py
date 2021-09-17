@@ -35,6 +35,7 @@ def Fundamentals(selected_dropdown_value):
     Financials = Code.financials
     Balances = Code.balance_sheet
     Cashflow = Code.cashflow
+    Info = Code.info
     count = 0
     Number_Of_Shares = []
     Net_Income = []
@@ -69,12 +70,12 @@ def Fundamentals(selected_dropdown_value):
             Longer_Debt.append(Balances.loc['Long Term Debt'][count])
         except:
             Longer_Debt.append(0)
-        Number_Of_Shares.append(float(Balances.loc['Common Stock'][count]/1000))
+        Number_Of_Shares.append(round(float(Info['sharesOutstanding']/1000),2))
         Net_Income.append(float(Financials.loc['Net Income'][count]/1000))
         Shareholder_Equity.append(float(Balances.loc['Total Stockholder Equity'][count]/1000))
         Total_Assets.append(Balances.loc['Total Assets'][count])
         Total_Liability.append(Balances.loc['Total Liab'][count])
-        Gross_Margin.append((((Financials.loc['Total Revenue'][count]-Financials.loc['Cost Of Revenue'][count])/Financials.loc['Total Revenue'][count]))*100)
+        Gross_Margin.append(round((((Financials.loc['Total Revenue'][count]-Financials.loc['Cost Of Revenue'][count])/Financials.loc['Total Revenue'][count])),3))
         Operating_Cashflow.append(float(Cashflow.loc['Total Cash From Operating Activities'][count]/1000))
         Freecashflow.append(float(((Operating_Cashflow[count]*1000)+Cashflow.loc['Capital Expenditures'][count])/1000))
         EBITDA.append(float(((Net_Income[count]*1000)-Interest_Expense[count]+Financials.loc['Income Tax Expense'][count]+Cashflow.loc['Depreciation'][count])/1000))
@@ -90,7 +91,7 @@ def Fundamentals(selected_dropdown_value):
             PS_DIV.append(0)
         count = count + 1
     df = pd.DataFrame({CompanyCode: dex, 'EPS': EPS,'ROE': ROE, 'ROA': ROA, 'Net Income ("000)': Net_Income,
-                       'Debt to Equity':DTE, 'Shareholder Equity ("000)': Shareholder_Equity,'Shares ("000)':Number_Of_Shares,
+                       'Debt to Equity':DTE, 'Shareholder Equity ("000)': Shareholder_Equity,'Gross Margin':Gross_Margin,
                        'Operating Cashflow ("000)':Operating_Cashflow, 'Free Cashflow ("000)': Freecashflow, 'EBITDA ("000)': EBITDA, 'Dividend P/S':PS_DIV})
     return df
 
@@ -436,15 +437,18 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
     SellCounter2 = 0
     SellReturn3 = 0
     SellCounter3 = 0
-    while x < days-10:
+    while x < days:
         if df1['Open'][x]>df1['Top Bollinger Band'][x]:
             if df1['Low'][x]<df1['Top Bollinger Band'][x]:
                 if df1['Close'][x] <= df1['Open'][x]:
                     if df1['MACD'][x]>=df1['Signal Line'][x]:
                         SellDate1.append(df1.index.date[x])
                         SellPrice1.append(df1['Close'][x])
-                        SellReturn1 = SellReturn1 + ((min(df1['Low'][x+1:x+9])-df1['High'][x])/df1['High'][x])
-                        SellCounter1 = SellCounter1 + 1
+                        if x + 10>days:
+                            continue
+                        else:
+                            SellReturn1 = SellReturn1 + ((min(df1['Low'][x+1:x+9])-df1['High'][x])/df1['High'][x])
+                            SellCounter1 = SellCounter1 + 1
         if df1['MACD'][x]>df1['Signal Line'][x]:
             if df1['MACD'][x]<df1['MACD'][x-1]:
                 if df1['MACD'][x]>df1['MACD Ave'][x]:
@@ -455,24 +459,33 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
                                     if df1['Close'][x]>df1['Midway'][x]:
                                         SellDate.append(df1.index.date[x])
                                         SellPrice.append(df1['Close'][x])
-                                        SellReturn2 = SellReturn2 + ((min(df1['Low'][x+1:x+9])-df1['High'][x])/df1['High'][x])
-                                        SellCounter2 = SellCounter2 + 1
+                                        if x + 10>days:
+                                            continue
+                                        else:
+                                            SellReturn2 = SellReturn2 + ((min(df1['Low'][x+1:x+9])-df1['High'][x])/df1['High'][x])
+                                            SellCounter2 = SellCounter2 + 1
         if df1['Low'][x-1]>df1['Top Bollinger Band'][x-1]:
             if df1['High'][x]<df1['Top Bollinger Band'][x]:
                 if df1['Close'][x] <= df1['Open'][x]:
                     if df1['MFI'][x]>=df1['Mid Line'][x]:
                         SellDate.append(df1.index.date[x])
                         SellPrice.append(df1['Close'][x])
-                        SellReturn3 = SellReturn3 + ((min(df1['Low'][x+1:x+9])-df1['High'][x])/df1['High'][x])
-                        SellCounter3 = SellCounter3 + 1
+                        if x + 10>days:
+                            continue
+                        else:
+                            SellReturn3 = SellReturn3 + ((min(df1['Low'][x+1:x+9])-df1['High'][x])/df1['High'][x])
+                            SellCounter3 = SellCounter3 + 1
                         
         if df1['Low'][x]<df1['Bottom Bollinger Band'][x]:
             if df1['Low'][x]<(df1['Low'][x-1])*0.99:
                 if df1['Low'][x]<(df1['Low'][x-2])*0.99:
                     BuyDate.append(df1.index.date[x])
                     BuyPrice.append(df1['Low'][x])
-                    BuyReturn = BuyReturn + ((max(df1['High'][x+1:x+9])-df1['Low'][x])/df1['Low'][x])
-                    BuyCounter = BuyCounter + 1
+                    if x + 10>days:
+                        continue
+                    else:
+                        BuyReturn = BuyReturn + ((max(df1['High'][x+1:x+9])-df1['Low'][x])/df1['Low'][x])
+                        BuyCounter = BuyCounter + 1
 
         x = x + 1
     x = 30

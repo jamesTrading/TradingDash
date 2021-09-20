@@ -23,6 +23,38 @@ def Profile(selected_dropdown_value):
     outputlist.append(Info['longBusinessSummary'])
     return outputlist
 
+def Valuations(selected_dropdown_value, EBITDA_Growth, DiscountRate, FreeCashGrowth):
+    outputlist = []
+    CompanyCode = selected_dropdown_value
+    Code = yf.Ticker(selected_dropdown_value)
+    Cashflow = Code.cashflow
+    EBITDA_Growth = float(EBITDA_Growth/100)
+    DiscountRate = float(DiscountRate/100)
+    FreeCashGrowth = float(FreeCashGrowth/100)
+    try:
+        EBITDA_Multiple = round(Code.info['enterpriseValue']/Code.info['ebitda'],3)
+        EBITDA_Forward = Code.info['ebitda']*(1+EBITDA_Growth)
+        Net_Debt = Code.info['totalDebt'] - Code.info['totalCash']
+        ENT = (EBITDA_Multiple*EBITDA_Forward) - Net_Debt
+        Value = round(ENT/Code.info['sharesOutstanding'],3)
+        outputlist.append(("The (EBITDA) valuation for ", CompanyCode, " is: ",Value))
+        outputlist.append(("The current price is: ",Code.info['regularMarketPrice']))
+        outputlist.append(("The return of the (EBITDA) valuation is: ", round(((Value-Code.info['regularMarketPrice'])/Code.info['regularMarketPrice'])*100,3),"%"))
+    except:
+        outputlist.append(("Financial Services and Banks cannot have EBITDA models"))
+    FreeCashFlow = Code.info['freeCashflow']
+    if FreeCashFlow == None:
+        FreeCashFlow = Cashflow.loc['Total Cash From Operating Activities'][0]-Cashflow.loc['Capital Expenditures'][0]
+    FreeCashValue = round(((FreeCashFlow*(1+FreeCashGrowth))/(DiscountRate-FreeCashGrowth))/Code.info['sharesOutstanding'],3)
+    outputlist.append(("The (FCF) valuation for ", CompanyCode, " is: ",FreeCashValue))
+    outputlist.append(("------- Further Ratios Below ----------"))
+    outputlist.append(("The PE Ratio is: ", round(Code.info['forwardPE'],3)))
+    outputlist.append(("The payout ratio is: ", round(Code.info['payoutRatio'],3)))
+    outputlist.append(("Institutional holders make up: ", round(Code.info['heldPercentInstitutions'],3)))
+    outputlist.append(("Insider holders make up: ", round(Code.info['heldPercentInsiders'],3)))
+    outputlist.append(("The percentage of shares short is: ",round(Code.info['sharesPercentSharesOut'],4)))
+    return outputlist
+
 def Fundamentals(selected_dropdown_value):
     CompanyCode = selected_dropdown_value
     try:
@@ -846,6 +878,15 @@ app.layout = html.Div([
         html.Table(id = 'my-profile')
         
         ],style={'width': '70%', 'float': 'right','display': 'inline-block','padding-right':'2%','padding-bottom':'2%'}),
+    html.Div([
+        html.H4('Further Ratios and Valuations'),
+        dcc.Input(id='input-EBITDA-state', type='number', placeholder='Expected EBITDA Growth'),
+        dcc.Input(id='input-Discount-state', type='number', placeholder='Discount Rate'),
+        dcc.Input(id='input-FCF-state', type='number', placeholder='Expected Free Cashflow Growth'),
+        html.Button(id='submit-button1-state', n_clicks=0, children='Calculate'),
+        html.Table(id = 'my-valuations')
+        
+        ],style={'width': '70%', 'float': 'right','display': 'inline-block','padding-right':'2%','padding-bottom':'2%'}),
 
     html.Div([
         dcc.Graph(id='Bollinger-graph'),
@@ -920,6 +961,21 @@ def update_output(n_clicks, selected_dropdown_value, input1, input2, input3, inp
         except:
             return "The company code is: ",selected_dropdown_value," ...Enter valid details"
 
+@app.callback(Output('my-valuations', 'children'),
+              Input('submit-button1-state', 'n_clicks'),
+              State('input', 'value'),
+              State('input-EBITDA-state', 'value'),
+              State('input-Discount-state', 'value'),
+              State('input-FCF-state', 'value'))
+def update_ratios(n_clicks, selected_dropdown_value, inputEBITDA, inputDiscount, inputFCF):
+    if n_clicks == 0:
+        return u'''
+                Valuation Calculation Pending'''
+    else:
+        outputlist = Valuations(selected_dropdown_value,inputEBITDA,inputDiscount,inputFCF)
+        return [html.Tr(html.Td(output)) for output in outputlist]
+
+
 
 # for the output-list
 @app.callback(Output('my-volatility', 'children'), [Input('input', 'value')])
@@ -940,3 +996,4 @@ def update_stonker(selected_dropdown_value):
 
 if __name__ == '__main__':
     app.run_server(debug=True)
+

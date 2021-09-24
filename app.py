@@ -49,10 +49,22 @@ def Valuations(selected_dropdown_value, EBITDA_Growth, DiscountRate, FreeCashGro
     outputlist.append(("The (FCF) valuation for ", CompanyCode, " is: ",FreeCashValue))
     outputlist.append(("------- Further Ratios Below ----------"))
     outputlist.append(("The PE Ratio is: ", round(Code.info['forwardPE'],3)))
-    outputlist.append(("The payout ratio is: ", round(Code.info['payoutRatio'],3)))
-    outputlist.append(("Institutional holders make up: ", round(Code.info['heldPercentInstitutions'],3)))
-    outputlist.append(("Insider holders make up: ", round(Code.info['heldPercentInsiders'],3)))
-    outputlist.append(("The percentage of shares short is: ",round(Code.info['sharesPercentSharesOut'],4)))
+    try:
+        outputlist.append(("The payout ratio is: ", round(Code.info['payoutRatio'],3)))
+    except:
+        outputlist.append(("Cannot obtain the payout ratio"))
+    try:
+        outputlist.append(("Institutional holders make up: ", round(Code.info['heldPercentInstitutions'],3)))
+    except:
+        outputlist.append(("Cannot obtain the institutional holder value"))
+    try:
+        outputlist.append(("Insider holders make up: ", round(Code.info['heldPercentInsiders'],3)))
+    except:
+        outputlist.append(("Cannot obtain the insider holder value"))
+    try:
+        outputlist.append(("The percentage of shares short is: ",round(Code.info['sharesPercentSharesOut'],4)))
+    except:
+        outputlist.append(("Cannot obtain the short percentage"))
     return outputlist
 
 def Fundamentals(selected_dropdown_value):
@@ -996,4 +1008,3 @@ def update_stonker(selected_dropdown_value):
 
 if __name__ == '__main__':
     app.run_server(debug=True)
-

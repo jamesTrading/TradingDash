@@ -72,7 +72,7 @@ def Fundamentals(selected_dropdown_value):
     try:
         stocktoday = pdr.get_data_yahoo(selected_dropdown_value,start=date.today(), end=date.today())
     except:
-        stocktoday = pdr.get_data_yahoo(selected_dropdown_value,start=(datetime.datetime.now() - datetime.timedelta(days=2)), end=(datetime.datetime.now() - datetime.timedelta(days=2)))
+        stocktoday = pdr.get_data_yahoo(selected_dropdown_value,start=(datetime.datetime.now() - datetime.timedelta(days=4)), end=(datetime.datetime.now() - datetime.timedelta(days=4)))
     CurrentPrice = stocktoday['Close'][0]
     
     Code = yf.Ticker(selected_dropdown_value)
@@ -387,6 +387,52 @@ def BollingerBands(selected_dropdown_value):
     fig.add_trace(go.Scatter(x=df2['Dates'],y=df2['BuyPrice'], mode = 'markers',marker=dict(size=12, color="red"), marker_symbol = "arrow-bar-down",showlegend=True,name="Significants"))
     return fig
 
+def Oppie_Calc(selected_dropdown_value,input1, input2, input3, input4, input5, input6, input7,stockers):
+    strike = float(input2)
+    risk = float(input4)
+    Annual_Volatility = float(input7)
+    Stock_Price = stockers
+    delta_time = (input3/252)/input6
+    u = math.exp(Annual_Volatility*(delta_time**(1/2)))
+    d = 1/u
+    p = (math.exp(risk*delta_time)-d)/(u-d)
+    S_Far = []
+    S_Near = []
+    F_Far = []
+    F_Near = []
+    x = 0
+    Option_Value = 0
+    Early_Exercise_Value = 0
+    while x <= input6:
+        S_Far.append(Stock_Price*(u**(input6-x))*(d**x))
+        if input1.upper() == 'C':
+            F_Far.append(max((S_Far[x] - strike),0))
+        if input1.upper() == 'P':
+            F_Far.append(max((strike - S_Far[x]),0))
+        x = x + 1
+    x = 1
+    counter = 0
+    delta = 0
+    while x <= input6:
+        while counter <= (input6 - x):
+            S_Near.append(Stock_Price*(u**(input6-x-counter))*(d**counter))
+            Option_Value = math.exp(-risk*delta_time)*(p*F_Far[counter]+(1-p)*F_Far[counter+1])
+            if input1.upper() == 'C' and input5.upper() == 'A':
+                Early_Exercise_Value = S_Near[counter] - strike
+            if input1.upper() == 'P' and input5.upper() == 'A':
+                Early_Exercise_Value = strike - S_Near[counter]
+            else:
+                Early_Exercise_Value = 0
+            F_Near.append(max(Option_Value,Early_Exercise_Value,0))
+            counter = counter + 1
+        delta = (F_Far[0]-F_Far[1])/((Stock_Price*u)-(Stock_Price*d))
+        S_Near = []
+        F_Far = F_Near
+        F_Near = []
+        counter = 0
+        x = x + 1
+    Premium = F_Far[0]
+    return Premium
 
 
 #This is the part of the app for producing the main info and buy/sell points
@@ -396,6 +442,14 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
     stock = pdr.get_data_yahoo(CompanyCode,start=datetime.datetime(2018,2,2), end=date.today())
     days = stock['Close'].count()
     df1 = pd.DataFrame(stock, columns=['Close','Open','High','Low','Volume'])
+    x = 1
+    Daily_Return = [0]
+    while x < days:
+        Daily_Return.append((df1['Close'][x]-df1['Close'][x-1])/df1['Close'][x-1])
+        x = x+1
+    df1['Daily Return']=Daily_Return
+    df1['30 Day Volatility'] = df1['Daily Return'].rolling(window=30).std()
+    Annual_Volatility30 = (df1['30 Day Volatility'][len(df1['30 Day Volatility'])-1])*(252**(1/2))
     df1['26 EMA'] = df1.ewm(span = 26, min_periods = 26).mean()['Close']
     df1['12 EMA'] = df1.ewm(span = 12, min_periods = 12).mean()['Close']
     df1['MACD'] = df1['12 EMA'] - df1['26 EMA']
@@ -463,7 +517,7 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
         x = x+1
     df1['MACD Ret'] = MACD_Return
     df1['Signal Ret'] = Signal_Return
-    x = 3
+    x = 30
     SellDate = []
     SellPrice = []
     SellDate1 = []
@@ -481,6 +535,13 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
     SellCounter2 = 0
     SellReturn3 = 0
     SellCounter3 = 0
+    SellReturn1P = 0
+    minposition = 0
+    maxposition = 0
+    BuyC = []
+    BuyC2 = []
+    SellP = []
+    SellP2 = []
     while x < days:
         if df1['Open'][x]>df1['Top Bollinger Band'][x]:
             if df1['Low'][x]<df1['Top Bollinger Band'][x]:
@@ -492,6 +553,13 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
                             print("")
                         else:
                             SellReturn1 = SellReturn1 + ((min(df1['Low'][x+1:x+9])-df1['High'][x])/df1['High'][x])
+                            Valnear = df1['Low'][x+1:x+9]
+                            minposition = np.where(Valnear == Valnear.min())
+                            minposition = minposition[0][0]
+                            initial_premium = Oppie_Calc(CompanyCode,"P",df1['High'][x],30,0.02,"A",30,df1['30 Day Volatility'][x],df1['High'][x])
+                            high_premium = Oppie_Calc(CompanyCode,"P",df1['High'][x],(30-minposition),0.02,"A",30,df1['30 Day Volatility'][(x+minposition)],df1['Low'][x+minposition])
+                            SellP.append((high_premium-initial_premium)/initial_premium)
+                            SellP2.append(SellCounter1)
                             SellCounter1 = SellCounter1 + 1
         if df1['MACD'][x]>df1['Signal Line'][x]:
             if df1['MACD'][x]<df1['MACD'][x-1]:
@@ -529,6 +597,13 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
                         print("")
                     else:
                         BuyReturn = BuyReturn + ((max(df1['High'][x+1:x+9])-df1['Low'][x])/df1['Low'][x])
+                        Valnear = df1['High'][x+1:x+9]
+                        maxposition = np.where(Valnear == Valnear.max())
+                        maxposition = maxposition[0][0]
+                        initial_premium = Oppie_Calc(CompanyCode,"C",df1['Low'][x],30,0.02,"A",30,df1['30 Day Volatility'][x],df1['Low'][x])
+                        high_premium = Oppie_Calc(CompanyCode,"C",df1['Low'][x],(30-maxposition),0.02,"A",30,df1['30 Day Volatility'][(x+maxposition)],df1['High'][x+maxposition])
+                        BuyC.append((high_premium-initial_premium)/initial_premium)
+                        BuyC2.append(BuyCounter)
                         BuyCounter = BuyCounter + 1
 
         x = x + 1
@@ -541,10 +616,14 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
             OtherBuyCounter = OtherBuyCounter + 1
             x = x + 29
         x = x + 1
+    df5 = pd.DataFrame({'Counter':BuyC2,'Call Return':BuyC})
+    df6 = pd.DataFrame({'Counter':SellP2,'Put Return':SellP})
     outputlist.append(("""The buy strategy works off buying the low when it goes below the bottom bollinger band. As long as
                         the low is 1% lower than the last 2 lows."""))
     try:
         outputlist.append(("Buy Strategy (green dots):  ",round(BuyReturn/BuyCounter,4)))
+        outputlist.append(("Buy Strategy (green dots) with call options:  ",round(df5['Call Return'].mean(),4)))
+        outputlist.append(("Buy Strategy (green dots) with call options (0.25 Quartile):  ",round(df5['Call Return'].quantile(q=0.25),4)))
     except:
         outputlist.append(("Buy Strategy (green dots):  N/A"))
     try:
@@ -553,6 +632,8 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
         outputlist.append(("Buy/Hold Strategy - Buy every 30 days if 10% under last 30 day high:  N/A"))
     try:
         outputlist.append(("(Orange) Sell strategy where the sell is triggered whenever the open is above the top band and the low is below the top band. The next 10 day low return is:  ",round(SellReturn1/SellCounter1,4)," and count: ",SellCounter1))
+        outputlist.append(("(Orange) Put options return in the next 10 days is (Mean):  ",round(df6['Put Return'].mean(),4)))
+        outputlist.append(("(Orange) Put options return in the next 10 days is (0.25 Quartile):  ",round(df6['Put Return'].quantile(q=0.25),4)))
     except:
         outputlist.append(("Sell strategy where the sell is triggered whenever the open is above the top band and the low is below the top band. The next 10 day low return is:  N/A"))
     try:  

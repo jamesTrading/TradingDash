@@ -450,6 +450,7 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
     df1['Daily Return']=Daily_Return
     df1['30 Day Volatility'] = df1['Daily Return'].rolling(window=30).std()
     Annual_Volatility30 = (df1['30 Day Volatility'][len(df1['30 Day Volatility'])-1])*(252**(1/2))
+    df1['Annual_Volatility30'] = (df1['30 Day Volatility'])*(252**(1/2))
     df1['26 EMA'] = df1.ewm(span = 26, min_periods = 26).mean()['Close']
     df1['12 EMA'] = df1.ewm(span = 12, min_periods = 12).mean()['Close']
     df1['MACD'] = df1['12 EMA'] - df1['26 EMA']
@@ -556,8 +557,8 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
                             Valnear = df1['Low'][x+1:x+9]
                             minposition = np.where(Valnear == Valnear.min())
                             minposition = minposition[0][0]
-                            initial_premium = Oppie_Calc(CompanyCode,"P",df1['High'][x],30,0.02,"A",30,df1['30 Day Volatility'][x],df1['High'][x])
-                            high_premium = Oppie_Calc(CompanyCode,"P",df1['High'][x],(30-minposition),0.02,"A",30,df1['30 Day Volatility'][(x+minposition)],df1['Low'][x+minposition])
+                            initial_premium = Oppie_Calc(CompanyCode,"P",df1['High'][x],30,0.02,"A",30,df1['Annual_Volatility30'][x],df1['High'][x])
+                            high_premium = Oppie_Calc(CompanyCode,"P",df1['High'][x],(30-minposition),0.02,"A",30,df1['Annual_Volatility30'][(x+minposition)],df1['Low'][x+minposition])
                             SellP.append((high_premium-initial_premium)/initial_premium)
                             SellP2.append(SellCounter1)
                             SellCounter1 = SellCounter1 + 1
@@ -600,8 +601,8 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
                         Valnear = df1['High'][x+1:x+9]
                         maxposition = np.where(Valnear == Valnear.max())
                         maxposition = maxposition[0][0]
-                        initial_premium = Oppie_Calc(CompanyCode,"C",df1['Low'][x],30,0.02,"A",30,df1['30 Day Volatility'][x],df1['Low'][x])
-                        high_premium = Oppie_Calc(CompanyCode,"C",df1['Low'][x],(30-maxposition),0.02,"A",30,df1['30 Day Volatility'][(x+maxposition)],df1['High'][x+maxposition])
+                        initial_premium = Oppie_Calc(CompanyCode,"C",df1['Low'][x],30,0.02,"A",30,df1['Annual_Volatility30'][x],df1['Low'][x])
+                        high_premium = Oppie_Calc(CompanyCode,"C",df1['Low'][x],(30-maxposition),0.02,"A",30,df1['Annual_Volatility30'][(x+maxposition)],df1['High'][x+maxposition])
                         BuyC.append((high_premium-initial_premium)/initial_premium)
                         BuyC2.append(BuyCounter)
                         BuyCounter = BuyCounter + 1

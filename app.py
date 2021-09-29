@@ -155,7 +155,7 @@ def FibonacciGrapher(CompanyCode, SellDate, SellPrice, SellDate1, SellPrice1, Bu
     LowValue2 = []
     LowValue3 = []
     HighValue3 = []
-    stock = yf.download(CompanyCode,interval="1m",period="5d")
+    stock = pdr.get_data_yahoo(CompanyCode,start=datetime.datetime(2018,2,2), end=date.today())
     days = stock['Close'].count()
     close_prices = stock['Close']
     df1 = pd.DataFrame(stock, columns=['Close','Open','High','Low'])
@@ -439,7 +439,7 @@ def Oppie_Calc(selected_dropdown_value,input1, input2, input3, input4, input5, i
 def TradingAlgo(selected_dropdown_value, junky, signalinput):
     factor = junky
     CompanyCode = selected_dropdown_value
-    stock = yf.download(CompanyCode,interval="1m",period="5d")
+    stock = pdr.get_data_yahoo(CompanyCode,start=datetime.datetime(2018,2,2), end=date.today())
     days = stock['Close'].count()
     df1 = pd.DataFrame(stock, columns=['Close','Open','High','Low','Volume'])
     x = 1
@@ -908,6 +908,29 @@ def VolatilityGrapher(selected_dropdown_value):
     fig.update_xaxes(dtick="M2",tickformat="%d\n%b\n%Y")
     return fig
 
+
+def Short_Term_Graph(selected_dropdown_value):
+    stock = yf.download(CompanyCode,interval="1m",period="5d")
+    days = stock['Close'].count()
+    close_prices = stock['Close']
+    df1 = pd.DataFrame(stock, columns=['Close','Open','High','Low'])
+    df1['SMA'] = df1.rolling(window=20).mean()['Close']
+    df1['20 Day Volatility'] = df1['Close'].rolling(window=20).std()
+    df1['Top Bollinger Band']=df1['SMA']+2*df1['20 Day Volatility']
+    df1['Bottom Bollinger Band']=df1['SMA']-2*df1['20 Day Volatility']
+    fig = go.Figure()
+    king = 0
+    if "." in CompanyCode:
+        king = ('Australian Market (1 MIN) - '+ CompanyCode)
+    else:
+        king = ('US Market (1 MIN) - '+ CompanyCode)
+    fig = go.Figure(data=[go.Candlestick(x=df1.index,open=df1['Open'],high=df1['High'],low=df1['Low'],close=df1['Close'])])
+    fig.add_trace(go.Scatter(x=df1.index,y=df1['Bottom Bollinger Band'], mode = 'lines',marker=dict(size=1, color="purple"),showlegend=False))
+    fig.add_trace(go.Scatter(x=df1.index,y=df1['Top Bollinger Band'], mode = 'lines',fill='tonexty',fillcolor='rgba(173,204,255,0.2)',marker=dict(size=1, color="purple"),showlegend=False))
+    fig.update_layout(xaxis_rangeslider_visible=False, width = 1400, height = 700,title=king, showlegend=False)
+    return fig
+
+
 #this creates the app -- imports the stylesheet
 app = dash.Dash(__name__,meta_tags=[{'property':'og:image','content':'https://i.ibb.co/P5RkK55/James-Charge-1.png'}])
 server = app.server
@@ -985,7 +1008,11 @@ app.layout = html.Div([
     html.Div([
         dcc.Graph(id='Bollinger-graph'),
         dcc.Graph(id='Volatility-graph')
-        ],style={'width': '70%', 'float': 'right','display': 'inline-block','padding-right':'2%','padding-bottom':'2%'})
+        ],style={'width': '70%', 'float': 'right','display': 'inline-block','padding-right':'2%','padding-bottom':'2%'}),
+    html.Div([
+        dcc.Graph(id='ShortTerm-graph')
+        ],style={'width': '70%', 'float': 'right','display': 'inline-block','padding-right':'2%','padding-bottom':'2%'}),
+    
 
 ])
 
@@ -1086,6 +1113,11 @@ def update_stonker(selected_dropdown_value):
 @app.callback(Output('Bollinger-graph','figure'),[Input('input','value')])
 def update_stonker(selected_dropdown_value):
     fig = BollingerBands(selected_dropdown_value)
+    return fig
+
+@app.callback(Output('ShortTerm-graph','figure'),[Input('input','value')])
+def update_short_Term(selected_dropdown_value):
+    fig = Short_Term_Graph(selected_dropdown_value)
     return fig
 
 if __name__ == '__main__':

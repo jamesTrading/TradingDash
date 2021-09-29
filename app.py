@@ -155,7 +155,7 @@ def FibonacciGrapher(CompanyCode, SellDate, SellPrice, SellDate1, SellPrice1, Bu
     LowValue2 = []
     LowValue3 = []
     HighValue3 = []
-    stock = yf.download(CompanyCode,interval="1m")
+    stock = yf.download(CompanyCode,interval="1m",period="max")
     days = stock['Close'].count()
     close_prices = stock['Close']
     df1 = pd.DataFrame(stock, columns=['Close','Open','High','Low'])
@@ -439,7 +439,7 @@ def Oppie_Calc(selected_dropdown_value,input1, input2, input3, input4, input5, i
 def TradingAlgo(selected_dropdown_value, junky, signalinput):
     factor = junky
     CompanyCode = selected_dropdown_value
-    stock = yf.download(CompanyCode,interval="1m")
+    stock = yf.download(CompanyCode,interval="1m",period="max")
     days = stock['Close'].count()
     df1 = pd.DataFrame(stock, columns=['Close','Open','High','Low','Volume'])
     x = 1

@@ -910,6 +910,7 @@ def VolatilityGrapher(selected_dropdown_value):
 
 
 def Short_Term_Graph(selected_dropdown_value):
+    CompanyCode = selected_dropdown_value
     stock = yf.download(CompanyCode,interval="1m",period="5d")
     days = stock['Close'].count()
     close_prices = stock['Close']

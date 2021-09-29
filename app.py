@@ -911,7 +911,7 @@ def VolatilityGrapher(selected_dropdown_value):
 
 def Short_Term_Graph(selected_dropdown_value):
     CompanyCode = selected_dropdown_value
-    stock = yf.download(CompanyCode,interval="5m",start =(date.today() - datetime.timedelta(days=59)), end = date.today(), auto_adjust = True)
+    stock = yf.download(CompanyCode,interval="5m",start =(date.today() - datetime.timedelta(days=55)), end = date.today(), auto_adjust = True)
     x = 0
     indexer = []
     while x < len(stock):

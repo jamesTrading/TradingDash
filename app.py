@@ -1019,7 +1019,7 @@ app.layout = html.Div([
         ],style={'width': '70%', 'float': 'right','display': 'inline-block','padding-right':'2%','padding-bottom':'2%'}),
     html.Div([
         dcc.Graph(id='ShortTerm-graph')
-        ],style={'width': '70%', 'float': 'right','display': 'inline-block','padding-right':'2%','padding-bottom':'2%'}),
+        ],style={'width': '70%', 'float': 'left','display': 'inline-block','padding-right':'2%','padding-bottom':'2%'}),
     
 
 ])

@@ -1,4 +1,4 @@
-  import dash
+import dash
 import numpy as np
 from dash.dependencies import Input, Output, State
 import dash_core_components as dcc

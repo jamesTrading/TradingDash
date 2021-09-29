@@ -1,35 +1,4 @@
-Skip to content
-Search or jump to…
-Pull requests
-Issues
-Marketplace
-Explore
- 
-@jamesTrading 
-jamesTrading
-/
-TradingDash
-Public
-1
-00
-Code
-Issues
-Pull requests
-Actions
-Projects
-Wiki
-Security
-Insights
-Settings
-TradingDash/app.py /
-@jamesTrading
-jamesTrading Update app.py
-Latest commit 5d14941 9 minutes ago
- History
- 1 contributor
-1134 lines (1073 sloc)  59.5 KB
-   
-import dash
+  import dash
 import numpy as np
 from dash.dependencies import Input, Output, State
 import dash_core_components as dcc

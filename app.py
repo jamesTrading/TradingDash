@@ -1,3 +1,34 @@
+Skip to content
+Search or jump to…
+Pull requests
+Issues
+Marketplace
+Explore
+ 
+@jamesTrading 
+jamesTrading
+/
+TradingDash
+Public
+1
+00
+Code
+Issues
+Pull requests
+Actions
+Projects
+Wiki
+Security
+Insights
+Settings
+TradingDash/app.py /
+@jamesTrading
+jamesTrading Update app.py
+Latest commit 5d14941 9 minutes ago
+ History
+ 1 contributor
+1134 lines (1073 sloc)  59.5 KB
+   
 import dash
 import numpy as np
 from dash.dependencies import Input, Output, State
@@ -912,9 +943,9 @@ def VolatilityGrapher(selected_dropdown_value):
 def Short_Term_Graph(selected_dropdown_value):
     CompanyCode = selected_dropdown_value
     try:
-        stock = yf.download(CompanyCode,interval="5m",start =(date.today() - datetime.timedelta(days=55)), end = (date.today()+datetime.timedelta(days=1)), auto_adjust = True)
+        stock = yf.download(CompanyCode,interval="5m",start =(date.today() - datetime.timedelta(days=55)), end = (date.today()+datetime.timedelta(days=1)))
     except:
-        stock = yf.download(CompanyCode,interval="5m",start =(date.today() - datetime.timedelta(days=55)), end = date.today(), auto_adjust = True)
+        stock = yf.download(CompanyCode,interval="5m",start =(date.today() - datetime.timedelta(days=55)), end = date.today())
     x = 0
     indexer = []
     while x < len(stock):
@@ -1132,3 +1163,4 @@ def update_short_Term(selected_dropdown_value):
 
 if __name__ == '__main__':
     app.run_server(debug=True)
+

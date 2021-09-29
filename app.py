@@ -924,7 +924,7 @@ def Short_Term_Graph(selected_dropdown_value):
     close_prices = stock['Close']
     df1 = pd.DataFrame(stock, columns=['Close','Open','High','Low','Volume'])
     df1['Close x Volume'] = df1['Close']*df1['Volume']
-    df['VWAP'] = (df.rolling(window=10).sum()['Close x Volume'])/df.rolling(window=10).sum()['Volume']
+    df1['VWAP'] = (df1.rolling(window=10).sum()['Close x Volume'])/df1.rolling(window=10).sum()['Volume']
     df1['Indexer'] = indexer
     df1['SMA'] = df1.rolling(window=20).mean()['Close']
     df1['20 Day Volatility'] = df1['Close'].rolling(window=20).std()

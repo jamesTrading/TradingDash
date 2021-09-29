@@ -912,9 +912,16 @@ def VolatilityGrapher(selected_dropdown_value):
 def Short_Term_Graph(selected_dropdown_value):
     CompanyCode = selected_dropdown_value
     stock = yf.download(CompanyCode,interval="1m",period="5d",auto_adjust = True)
+    x = 0
+    indexer = []
+    while x < len(stock):
+        indexer.append(x)
+        x = x + 1
     days = stock['Close'].count()
     close_prices = stock['Close']
     df1 = pd.DataFrame(stock, columns=['Close','Open','High','Low'])
+    df1['Indexer'] = indexer
+    df1.to_csv('short_data.csv')
     df1['SMA'] = df1.rolling(window=20).mean()['Close']
     df1['20 Day Volatility'] = df1['Close'].rolling(window=20).std()
     df1['Top Bollinger Band']=df1['SMA']+2*df1['20 Day Volatility']
@@ -925,7 +932,7 @@ def Short_Term_Graph(selected_dropdown_value):
         king = ('Australian Market (1 MIN) - '+ CompanyCode)
     else:
         king = ('US Market (1 MIN) - '+ CompanyCode)
-    fig = go.Figure(data=[go.Candlestick(x=df1.index,open=df1['Open'],high=df1['High'],low=df1['Low'],close=df1['Close'])])
+    fig = go.Figure(data=[go.Candlestick(x=df1['Indexer'],open=df1['Open'],high=df1['High'],low=df1['Low'],close=df1['Close'])])
     fig.add_trace(go.Scatter(x=df1.index,y=df1['Bottom Bollinger Band'], mode = 'lines',marker=dict(size=1, color="purple"),showlegend=False))
     fig.add_trace(go.Scatter(x=df1.index,y=df1['Top Bollinger Band'], mode = 'lines',fill='tonexty',fillcolor='rgba(173,204,255,0.2)',marker=dict(size=1, color="purple"),showlegend=False))
     fig.update_layout(xaxis_rangeslider_visible=False, width = 1400, height = 700,title=king, showlegend=False)

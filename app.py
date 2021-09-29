@@ -911,7 +911,7 @@ def VolatilityGrapher(selected_dropdown_value):
 
 def Short_Term_Graph(selected_dropdown_value):
     CompanyCode = selected_dropdown_value
-    stock = yf.download(CompanyCode,interval="1m",period="5d")
+    stock = yf.download(CompanyCode,interval="1m",period="5d",auto_adjust = True)
     days = stock['Close'].count()
     close_prices = stock['Close']
     df1 = pd.DataFrame(stock, columns=['Close','Open','High','Low'])

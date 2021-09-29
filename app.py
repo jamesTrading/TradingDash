@@ -922,7 +922,9 @@ def Short_Term_Graph(selected_dropdown_value):
         x = x + 1
     days = stock['Close'].count()
     close_prices = stock['Close']
-    df1 = pd.DataFrame(stock, columns=['Close','Open','High','Low'])
+    df1 = pd.DataFrame(stock, columns=['Close','Open','High','Low','Volume'])
+    df1['Close x Volume'] = df1['Close']*df1['Volume']
+    df['VWAP'] = (df.rolling(window=10).sum()['Close x Volume'])/df.rolling(window=10).sum()['Volume']
     df1['Indexer'] = indexer
     df1['SMA'] = df1.rolling(window=20).mean()['Close']
     df1['20 Day Volatility'] = df1['Close'].rolling(window=20).std()
@@ -935,6 +937,7 @@ def Short_Term_Graph(selected_dropdown_value):
     else:
         king = ('US Market (5 MIN) - '+ CompanyCode)
     fig = go.Figure(data=[go.Candlestick(x=df1['Indexer'],open=df1['Open'],high=df1['High'],low=df1['Low'],close=df1['Close'])])
+    fig.add_trace(go.Scatter(x=df1['Indexer'],y=df1['VWAP'], mode = 'lines',marker=dict(size=1, color="green"),showlegend=False))
     fig.add_trace(go.Scatter(x=df1['Indexer'],y=df1['Bottom Bollinger Band'], mode = 'lines',marker=dict(size=1, color="purple"),showlegend=False))
     fig.add_trace(go.Scatter(x=df1['Indexer'],y=df1['Top Bollinger Band'], mode = 'lines',fill='tonexty',fillcolor='rgba(173,204,255,0.2)',marker=dict(size=1, color="purple"),showlegend=False))
     fig.update_layout(xaxis_rangeslider_visible=False, width = 1400, height = 700,title=king, showlegend=False)

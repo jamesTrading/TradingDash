@@ -928,9 +928,9 @@ def Short_Term_Graph(selected_dropdown_value):
     fig = go.Figure()
     king = 0
     if "." in CompanyCode:
-        king = ('Australian Market (1 MIN) - '+ CompanyCode)
+        king = ('Australian Market (5 MIN) - '+ CompanyCode)
     else:
-        king = ('US Market (1 MIN) - '+ CompanyCode)
+        king = ('US Market (5 MIN) - '+ CompanyCode)
     fig = go.Figure(data=[go.Candlestick(x=df1['Indexer'],open=df1['Open'],high=df1['High'],low=df1['Low'],close=df1['Close'])])
     fig.add_trace(go.Scatter(x=df1['Indexer'],y=df1['Bottom Bollinger Band'], mode = 'lines',marker=dict(size=1, color="purple"),showlegend=False))
     fig.add_trace(go.Scatter(x=df1['Indexer'],y=df1['Top Bollinger Band'], mode = 'lines',fill='tonexty',fillcolor='rgba(173,204,255,0.2)',marker=dict(size=1, color="purple"),showlegend=False))

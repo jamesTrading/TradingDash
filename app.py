@@ -14,6 +14,7 @@ import plotly.graph_objects as go
 import plotly
 from bs4 import BeautifulSoup
 import yfinance as yf
+import pandas_ta as pta
 
 def Profile(selected_dropdown_value):
     CompanyCode = selected_dropdown_value    

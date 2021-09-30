@@ -996,7 +996,6 @@ def ST_MoneyFlowIndex(selected_dropdown_value):
     days = stock['Close'].count()
     df2 = pd.DataFrame(stock)
     df2['Typical Price'] = (df2['Close'] + df2['High'] + df2['Low'])/3
-    df2['Indexer'] = indexer
     AbsTP.append(df2['Typical Price'].iloc[x])
     while x < (days - 1):
         if df2['Typical Price'].iloc[(x+1)] > df2['Typical Price'].iloc[x]:
@@ -1033,6 +1032,7 @@ def ST_MoneyFlowIndex(selected_dropdown_value):
     while x < len(df2['MFI']):
         indexer.append(x)
         x = x + 1
+    df2['Indexer'] = indexer
     df2['Mid Line'] = df2['MFI'].mean()
     df2['SELL'] = df2['Mid Line'] + df2['MFI'].std()
     df2['BUYER'] = df2['Mid Line'] - df2['MFI'].std()

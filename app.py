@@ -965,9 +965,9 @@ def ST_MACD_BuySignal_graphed(selected_dropdown_value):
     df2 = df2.dropna()
     fig = go.Figure()
     if "." in CompanyCode:
-        king = ('MACD Graph - '+ CompanyCode)
+        king = ('MACD Graph (5 MIN) - '+ CompanyCode)
     else:
-        king = ('MACD Graph - '+ CompanyCode)
+        king = ('MACD Graph (5 MIN) - '+ CompanyCode)
     fig.add_trace(go.Scatter(x=df2['Indexer'],y=df2['MACD'], mode = 'lines',marker=dict(size=1, color="red"),showlegend=False))
     fig.add_trace(go.Scatter(x=df2['Indexer'],y=df2['Signal Line'], mode = 'lines',marker=dict(size=1, color="green"),showlegend=False))
     fig.add_trace(go.Scatter(x=df2['Indexer'],y=df2['Bro Line'], mode = 'lines',marker=dict(size=1, color="dark red"),showlegend=False))
@@ -1034,19 +1034,48 @@ def ST_MoneyFlowIndex(selected_dropdown_value):
         x = x + 1
     df2['Indexer'] = indexer
     df2['Mid Line'] = df2['MFI'].mean()
-    df2['SELL'] = df2['Mid Line'] + df2['MFI'].std()
-    df2['BUYER'] = df2['Mid Line'] - df2['MFI'].std()
+    df2['SELL'] = 80
+    df2['BUYER'] = 20
     fig = go.Figure()
     if "." in CompanyCode:
-        king = ('Money Flow Index - '+ CompanyCode)
+        king = ('Money Flow Index (5 MIN) - '+ CompanyCode)
     else:
-        king = ('Money Flow Index - '+ CompanyCode)
+        king = ('Money Flow Index (5 MIN) - '+ CompanyCode)
     fig.add_trace(go.Scatter(x=df2['Indexer'],y=df2['MFI'], mode = 'lines',marker=dict(size=1, color="blue"),showlegend=False))
     fig.add_trace(go.Scatter(x=df2['Indexer'],y=df2['BUYER'], mode = 'lines',marker=dict(size=1, color="green"),showlegend=False))
     fig.add_trace(go.Scatter(x=df2['Indexer'],y=df2['SELL'], mode = 'lines',marker=dict(size=1, color="red"),showlegend=False))
     fig.add_trace(go.Scatter(x=df2['Indexer'],y=df2['Mid Line'], mode = 'lines',marker=dict(size=1, color="black"),showlegend=False))
     fig.update_layout(title=king,xaxis_title="Time",yaxis_title="MFI Value", width=750, height = 550)
     return fig
+
+def ST_RSI(selected_dropdown_value):
+    CompanyCode = selected_dropdown_value
+    try:
+        stock = yf.download(CompanyCode,interval="5m",start =(date.today() - datetime.timedelta(days=20)), end = (date.today()+datetime.timedelta(days=1)))
+    except:
+        stock = yf.download(CompanyCode,interval="5m",start =(date.today() - datetime.timedelta(days=20)), end = date.today())
+    x = 0
+    indexer = []
+    while x < len(stock):
+        indexer.append(x)
+        x = x + 1
+    days = stock['Close'].count()
+    df2 = pd.DataFrame(stock, columns = ['Close'])
+    df['RSI'] = pta.rsi(df['Close'], length = 14)
+    df['buy']= 20
+    df['sell'] = 80
+    df2['Indexer'] = indexer
+    df2 = df2.dropna()
+    fig = go.Figure()
+    if "." in CompanyCode:
+        king = ('RSI Graph (5 MIN) - '+ CompanyCode)
+    else:
+        king = ('RSI Graph (5 MIN) - '+ CompanyCode)
+    fig.add_trace(go.Scatter(x=df2['Indexer'],y=df2['RSI'], mode = 'lines',marker=dict(size=1, color="blue"),showlegend=False))
+    fig.add_trace(go.Scatter(x=df2['Indexer'],y=df2['buy'], mode = 'lines',marker=dict(size=1, color="green"),showlegend=False))
+    fig.add_trace(go.Scatter(x=df2['Indexer'],y=df2['sell'], mode = 'lines',marker=dict(size=1, color="red"),showlegend=False))
+    fig.update_layout(title=king,xaxis_title="Time",yaxis_title="RSI Value", width=750, height = 550)
+    return fig 
 
 
 #this creates the app -- imports the stylesheet
@@ -1139,6 +1168,10 @@ app.layout = html.Div([
         dcc.Graph(id='mfiST-graph')
         
         ],style={'width': '50%', 'float': 'right','display': 'inline-block'}),
+    html.Div([
+        dcc.Graph(id='RSI-graph')
+        
+        ],style={'width': '50%', 'float': 'left','display': 'inline-block'}),
     
 
 ])
@@ -1255,6 +1288,11 @@ def update_STmacd(selected_dropdown_value):
 @app.callback(Output('mfiST-graph','figure'),[Input('input','value')])
 def update_STmfi(selected_dropdown_value):
     fig = ST_MoneyFlowIndex(selected_dropdown_value)
+    return fig
+
+@app.callback(Output('RSI-graph','figure'),[Input('input','value')])
+def update_RSI(selected_dropdown_value):
+    fig = ST_RSI(selected_dropdown_value)
     return fig
 
 if __name__ == '__main__':

@@ -993,11 +993,6 @@ def ST_MoneyFlowIndex(selected_dropdown_value):
         stock = yf.download(CompanyCode,interval="5m",start =(date.today() - datetime.timedelta(days=20)), end = (date.today()+datetime.timedelta(days=1)))
     except:
         stock = yf.download(CompanyCode,interval="5m",start =(date.today() - datetime.timedelta(days=20)), end = date.today())
-    x = 0
-    indexer = []
-    while x < len(stock):
-        indexer.append(x)
-        x = x + 1
     days = stock['Close'].count()
     df2 = pd.DataFrame(stock)
     df2['Typical Price'] = (df2['Close'] + df2['High'] + df2['Low'])/3
@@ -1033,6 +1028,11 @@ def ST_MoneyFlowIndex(selected_dropdown_value):
         MFI.append(Equat)
         w = w + 1
     df2['MFI'] = MFI
+    x = 0
+    indexer = []
+    while x < len(df2['MFI']):
+        indexer.append(x)
+        x = x + 1
     df2['Mid Line'] = df2['MFI'].mean()
     df2['SELL'] = df2['Mid Line'] + df2['MFI'].std()
     df2['BUYER'] = df2['Mid Line'] - df2['MFI'].std()

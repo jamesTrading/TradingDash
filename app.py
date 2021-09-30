@@ -912,9 +912,9 @@ def VolatilityGrapher(selected_dropdown_value):
 def Short_Term_Graph(selected_dropdown_value):
     CompanyCode = selected_dropdown_value
     try:
-        stock = yf.download(CompanyCode,interval="5m",start =(date.today() - datetime.timedelta(days=55)), end = (date.today()+datetime.timedelta(days=1)))
+        stock = yf.download(CompanyCode,interval="5m",start =(date.today() - datetime.timedelta(days=20)), end = (date.today()+datetime.timedelta(days=1)))
     except:
-        stock = yf.download(CompanyCode,interval="5m",start =(date.today() - datetime.timedelta(days=55)), end = date.today())
+        stock = yf.download(CompanyCode,interval="5m",start =(date.today() - datetime.timedelta(days=20)), end = date.today())
     x = 0
     indexer = []
     while x < len(stock):
@@ -946,9 +946,9 @@ def Short_Term_Graph(selected_dropdown_value):
 def ST_MACD_BuySignal_graphed(selected_dropdown_value):
     CompanyCode = selected_dropdown_value
     try:
-        stock = yf.download(CompanyCode,interval="5m",start =(date.today() - datetime.timedelta(days=55)), end = (date.today()+datetime.timedelta(days=1)))
+        stock = yf.download(CompanyCode,interval="5m",start =(date.today() - datetime.timedelta(days=20)), end = (date.today()+datetime.timedelta(days=1)))
     except:
-        stock = yf.download(CompanyCode,interval="5m",start =(date.today() - datetime.timedelta(days=55)), end = date.today())
+        stock = yf.download(CompanyCode,interval="5m",start =(date.today() - datetime.timedelta(days=20)), end = date.today())
     x = 0
     indexer = []
     while x < len(stock):
@@ -990,9 +990,9 @@ def ST_MoneyFlowIndex(selected_dropdown_value):
     MFI = [50,50,50,50,50,50,50,50,50,50,50,50,50,50]
     CompanyCode = selected_dropdown_value
     try:
-        stock = yf.download(CompanyCode,interval="5m",start =(date.today() - datetime.timedelta(days=55)), end = (date.today()+datetime.timedelta(days=1)))
+        stock = yf.download(CompanyCode,interval="5m",start =(date.today() - datetime.timedelta(days=20)), end = (date.today()+datetime.timedelta(days=1)))
     except:
-        stock = yf.download(CompanyCode,interval="5m",start =(date.today() - datetime.timedelta(days=55)), end = date.today())
+        stock = yf.download(CompanyCode,interval="5m",start =(date.today() - datetime.timedelta(days=20)), end = date.today())
     x = 0
     indexer = []
     while x < len(stock):

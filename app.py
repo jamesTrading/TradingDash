@@ -949,6 +949,11 @@ def ST_MACD_BuySignal_graphed(selected_dropdown_value):
         stock = yf.download(CompanyCode,interval="5m",start =(date.today() - datetime.timedelta(days=55)), end = (date.today()+datetime.timedelta(days=1)))
     except:
         stock = yf.download(CompanyCode,interval="5m",start =(date.today() - datetime.timedelta(days=55)), end = date.today())
+    x = 0
+    indexer = []
+    while x < len(stock):
+        indexer.append(x)
+        x = x + 1
     days = stock['Close'].count()
     df2 = pd.DataFrame(stock, columns = ['Close'])
     df2['26 EMA'] = df2.ewm(span = 26, min_periods = 26).mean()['Close']
@@ -956,16 +961,16 @@ def ST_MACD_BuySignal_graphed(selected_dropdown_value):
     df2['MACD'] = df2['12 EMA'] - df2['26 EMA']
     df2['Bro Line'] = df2['MACD'].mean()
     df2['Signal Line'] = df2.ewm(span = 9, min_periods = 9).mean()['MACD']
+    df2['Indexer'] = indexer
     df2 = df2.dropna()
     fig = go.Figure()
     if "." in CompanyCode:
         king = ('MACD Graph - '+ CompanyCode)
     else:
         king = ('MACD Graph - '+ CompanyCode)
-    fig.add_trace(go.Scatter(x=df2.index,y=df2['MACD'], mode = 'lines',marker=dict(size=1, color="red"),showlegend=False))
-    fig.update_xaxes(dtick="M2",tickformat="%d\n%b\n%Y")
-    fig.add_trace(go.Scatter(x=df2.index,y=df2['Signal Line'], mode = 'lines',marker=dict(size=1, color="green"),showlegend=False))
-    fig.add_trace(go.Scatter(x=df2.index,y=df2['Bro Line'], mode = 'lines',marker=dict(size=1, color="dark red"),showlegend=False))
+    fig.add_trace(go.Scatter(x=df2['Indexer'],y=df2['MACD'], mode = 'lines',marker=dict(size=1, color="red"),showlegend=False))
+    fig.add_trace(go.Scatter(x=df2['Indexer'],y=df2['Signal Line'], mode = 'lines',marker=dict(size=1, color="green"),showlegend=False))
+    fig.add_trace(go.Scatter(x=df2['Indexer'],y=df2['Bro Line'], mode = 'lines',marker=dict(size=1, color="dark red"),showlegend=False))
     fig.update_layout(title=king,xaxis_title="Time",yaxis_title="MACD Value", width=750, height = 550)
     return fig 
 
@@ -988,9 +993,15 @@ def ST_MoneyFlowIndex(selected_dropdown_value):
         stock = yf.download(CompanyCode,interval="5m",start =(date.today() - datetime.timedelta(days=55)), end = (date.today()+datetime.timedelta(days=1)))
     except:
         stock = yf.download(CompanyCode,interval="5m",start =(date.today() - datetime.timedelta(days=55)), end = date.today())
+    x = 0
+    indexer = []
+    while x < len(stock):
+        indexer.append(x)
+        x = x + 1
     days = stock['Close'].count()
     df2 = pd.DataFrame(stock)
     df2['Typical Price'] = (df2['Close'] + df2['High'] + df2['Low'])/3
+    df2['Indexer'] = indexer
     AbsTP.append(df2['Typical Price'].iloc[x])
     while x < (days - 1):
         if df2['Typical Price'].iloc[(x+1)] > df2['Typical Price'].iloc[x]:
@@ -1030,11 +1041,10 @@ def ST_MoneyFlowIndex(selected_dropdown_value):
         king = ('Money Flow Index - '+ CompanyCode)
     else:
         king = ('Money Flow Index - '+ CompanyCode)
-    fig.add_trace(go.Scatter(x=df2.index,y=df2['MFI'], mode = 'lines',marker=dict(size=1, color="blue"),showlegend=False))
-    fig.update_xaxes(dtick="M2",tickformat="%d\n%b\n%Y")
-    fig.add_trace(go.Scatter(x=df2.index,y=df2['BUYER'], mode = 'lines',marker=dict(size=1, color="green"),showlegend=False))
-    fig.add_trace(go.Scatter(x=df2.index,y=df2['SELL'], mode = 'lines',marker=dict(size=1, color="red"),showlegend=False))
-    fig.add_trace(go.Scatter(x=df2.index,y=df2['Mid Line'], mode = 'lines',marker=dict(size=1, color="black"),showlegend=False))
+    fig.add_trace(go.Scatter(x=df2['Indexer'],y=df2['MFI'], mode = 'lines',marker=dict(size=1, color="blue"),showlegend=False))
+    fig.add_trace(go.Scatter(x=df2['Indexer'],y=df2['BUYER'], mode = 'lines',marker=dict(size=1, color="green"),showlegend=False))
+    fig.add_trace(go.Scatter(x=df2['Indexer'],y=df2['SELL'], mode = 'lines',marker=dict(size=1, color="red"),showlegend=False))
+    fig.add_trace(go.Scatter(x=df2['Indexer'],y=df2['Mid Line'], mode = 'lines',marker=dict(size=1, color="black"),showlegend=False))
     fig.update_layout(title=king,xaxis_title="Time",yaxis_title="MFI Value", width=750, height = 550)
     return fig
 

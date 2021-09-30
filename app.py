@@ -1055,26 +1055,25 @@ def ST_RSI(selected_dropdown_value):
         stock = yf.download(CompanyCode,interval="5m",start =(date.today() - datetime.timedelta(days=20)), end = (date.today()+datetime.timedelta(days=1)))
     except:
         stock = yf.download(CompanyCode,interval="5m",start =(date.today() - datetime.timedelta(days=20)), end = date.today())
-    x = 0
-    indexer = []
-    while x < len(stock):
-        indexer.append(x)
-        x = x + 1
     days = stock['Close'].count()
-    df2 = pd.DataFrame(stock, columns = ['Close'])
+    df = pd.DataFrame(stock, columns = ['Close'])
     df['RSI'] = pta.rsi(df['Close'], length = 14)
     df['buy']= 20
     df['sell'] = 80
+    x = 0
+    indexer = []
+    while x < len(df['RSI']):
+        indexer.append(x)
+        x = x + 1
     df2['Indexer'] = indexer
-    df2 = df2.dropna()
     fig = go.Figure()
     if "." in CompanyCode:
         king = ('RSI Graph (5 MIN) - '+ CompanyCode)
     else:
         king = ('RSI Graph (5 MIN) - '+ CompanyCode)
-    fig.add_trace(go.Scatter(x=df2['Indexer'],y=df2['RSI'], mode = 'lines',marker=dict(size=1, color="blue"),showlegend=False))
-    fig.add_trace(go.Scatter(x=df2['Indexer'],y=df2['buy'], mode = 'lines',marker=dict(size=1, color="green"),showlegend=False))
-    fig.add_trace(go.Scatter(x=df2['Indexer'],y=df2['sell'], mode = 'lines',marker=dict(size=1, color="red"),showlegend=False))
+    fig.add_trace(go.Scatter(x=df['Indexer'],y=df['RSI'], mode = 'lines',marker=dict(size=1, color="blue"),showlegend=False))
+    fig.add_trace(go.Scatter(x=df['Indexer'],y=df['buy'], mode = 'lines',marker=dict(size=1, color="green"),showlegend=False))
+    fig.add_trace(go.Scatter(x=df['Indexer'],y=df['sell'], mode = 'lines',marker=dict(size=1, color="red"),showlegend=False))
     fig.update_layout(title=king,xaxis_title="Time",yaxis_title="RSI Value", width=750, height = 550)
     return fig 
 

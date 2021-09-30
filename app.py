@@ -1065,7 +1065,7 @@ def ST_RSI(selected_dropdown_value):
     while x < len(df['RSI']):
         indexer.append(x)
         x = x + 1
-    df2['Indexer'] = indexer
+    df['Indexer'] = indexer
     fig = go.Figure()
     if "." in CompanyCode:
         king = ('RSI Graph (5 MIN) - '+ CompanyCode)

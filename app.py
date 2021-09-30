@@ -945,7 +945,7 @@ def Short_Term_Graph(selected_dropdown_value):
 
 def ST_MACD_BuySignal_graphed(selected_dropdown_value):
     CompanyCode = selected_dropdown_value
-    stry:
+    try:
         stock = yf.download(CompanyCode,interval="5m",start =(date.today() - datetime.timedelta(days=55)), end = (date.today()+datetime.timedelta(days=1)))
     except:
         stock = yf.download(CompanyCode,interval="5m",start =(date.today() - datetime.timedelta(days=55)), end = date.today())

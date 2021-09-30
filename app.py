@@ -940,7 +940,7 @@ def Short_Term_Graph(selected_dropdown_value):
     fig.add_trace(go.Scatter(x=df1['Indexer'],y=df1['VWAP'], mode = 'lines',marker=dict(size=1, color="green"),showlegend=False))
     fig.add_trace(go.Scatter(x=df1['Indexer'],y=df1['Bottom Bollinger Band'], mode = 'lines',marker=dict(size=1, color="purple"),showlegend=False))
     fig.add_trace(go.Scatter(x=df1['Indexer'],y=df1['Top Bollinger Band'], mode = 'lines',fill='tonexty',fillcolor='rgba(173,204,255,0.2)',marker=dict(size=1, color="purple"),showlegend=False))
-    fig.update_layout(xaxis_rangeslider_visible=False, width = 1400, height = 700,title=king, showlegend=False)
+    fig.update_layout(xaxis_rangeslider_visible=False, width = 1400, height = 500,title=king, showlegend=False)
     return fig
 
 

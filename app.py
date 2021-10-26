@@ -361,7 +361,6 @@ def BollingerBands(selected_dropdown_value):
         Underposition = np.where(Under == Under.min())
         Underposition = Underposition[0][0]
         Over = df1['Bollinger Diff Return'][x-4+Underposition:x+2+Underposition]
-        print(Over)
         Overposition = np.where(Over == Over.max())
         Overposition = Overposition[0][0]
         if df1['Bollinger Diff Return'][x-5+Underposition]<df1['BUTT'][x]:

@@ -594,16 +594,16 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
             if df1['Low'][x]<(df1['Low'][x-1])*0.99:
                 if df1['Low'][x]<(df1['Low'][x-2])*0.99:
                     BuyDate.append(df1.index.date[x])
-                    BuyPrice.append(df1['Low'][x])
+                    BuyPrice.append(round(df1['Bottom Bollinger Band'][x],3))
                     if x + 11>days:
                         print("")
                     else:
-                        BuyReturn = BuyReturn + ((max(df1['High'][x+1:x+9])-df1['Low'][x])/df1['Low'][x])
+                        BuyReturn = BuyReturn + ((max(df1['High'][x+1:x+9])-round(df1['Bottom Bollinger Band'][x],3))/round(df1['Bottom Bollinger Band'][x],3))
                         Valnear = df1['High'][x+1:x+9]
                         maxposition = np.where(Valnear == Valnear.max())
                         maxposition = maxposition[0][0]
-                        initial_premium = Oppie_Calc(CompanyCode,"C",df1['Low'][x],30,0.02,"A",30,df1['Annual_Volatility30'][x],df1['Low'][x])
-                        high_premium = Oppie_Calc(CompanyCode,"C",df1['Low'][x],(30-maxposition),0.02,"A",30,df1['Annual_Volatility30'][(x+maxposition)],df1['High'][x+maxposition])
+                        initial_premium = Oppie_Calc(CompanyCode,"C",round(df1['Bottom Bollinger Band'][x],3),30,0.02,"A",30,df1['Annual_Volatility30'][x],df1['Low'][x])
+                        high_premium = Oppie_Calc(CompanyCode,"C",round(df1['Bottom Bollinger Band'][x],3),(30-maxposition),0.02,"A",30,df1['Annual_Volatility30'][(x+maxposition)],df1['High'][x+maxposition])
                         BuyC.append((high_premium-initial_premium)/initial_premium)
                         BuyC2.append(BuyCounter)
                         BuyCounter = BuyCounter + 1

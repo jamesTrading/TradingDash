@@ -910,174 +910,6 @@ def VolatilityGrapher(selected_dropdown_value):
     return fig
 
 
-def Short_Term_Graph(selected_dropdown_value):
-    CompanyCode = selected_dropdown_value
-    try:
-        stock = yf.download(CompanyCode,interval="5m",start =(date.today() - datetime.timedelta(days=20)), end = (date.today()+datetime.timedelta(days=1)))
-    except:
-        stock = yf.download(CompanyCode,interval="5m",start =(date.today() - datetime.timedelta(days=20)), end = date.today())
-    x = 0
-    indexer = []
-    while x < len(stock):
-        indexer.append(x)
-        x = x + 1
-    days = stock['Close'].count()
-    close_prices = stock['Close']
-    df1 = pd.DataFrame(stock, columns=['Close','Open','High','Low','Volume'])
-    df1['Close x Volume'] = df1['Close']*df1['Volume']
-    df1['VWAP'] = (df1.rolling(window=10).sum()['Close x Volume'])/df1.rolling(window=10).sum()['Volume']
-    df1['Indexer'] = indexer
-    df1['SMA'] = df1.rolling(window=20).mean()['Close']
-    df1['20 Day Volatility'] = df1['Close'].rolling(window=20).std()
-    df1['Top Bollinger Band']=df1['SMA']+2*df1['20 Day Volatility']
-    df1['Bottom Bollinger Band']=df1['SMA']-2*df1['20 Day Volatility']
-    fig = go.Figure()
-    king = 0
-    if "." in CompanyCode:
-        king = ('Australian Market (5 MIN) - '+ CompanyCode)
-    else:
-        king = ('US Market (5 MIN) - '+ CompanyCode)
-    fig = go.Figure(data=[go.Candlestick(x=df1['Indexer'],open=df1['Open'],high=df1['High'],low=df1['Low'],close=df1['Close'])])
-    fig.add_trace(go.Scatter(x=df1['Indexer'],y=df1['VWAP'], mode = 'lines',marker=dict(size=1, color="green"),showlegend=False))
-    fig.add_trace(go.Scatter(x=df1['Indexer'],y=df1['Bottom Bollinger Band'], mode = 'lines',marker=dict(size=1, color="purple"),showlegend=False))
-    fig.add_trace(go.Scatter(x=df1['Indexer'],y=df1['Top Bollinger Band'], mode = 'lines',fill='tonexty',fillcolor='rgba(173,204,255,0.2)',marker=dict(size=1, color="purple"),showlegend=False))
-    fig.update_layout(xaxis_rangeslider_visible=False, width = 1400, height = 500,title=king, showlegend=False)
-    return fig
-
-def ST_MACD_BuySignal_graphed(selected_dropdown_value):
-    CompanyCode = selected_dropdown_value
-    try:
-        stock = yf.download(CompanyCode,interval="5m",start =(date.today() - datetime.timedelta(days=20)), end = (date.today()+datetime.timedelta(days=1)))
-    except:
-        stock = yf.download(CompanyCode,interval="5m",start =(date.today() - datetime.timedelta(days=20)), end = date.today())
-    x = 0
-    indexer = []
-    while x < len(stock):
-        indexer.append(x)
-        x = x + 1
-    days = stock['Close'].count()
-    df2 = pd.DataFrame(stock, columns = ['Close'])
-    df2['26 EMA'] = df2.ewm(span = 26, min_periods = 26).mean()['Close']
-    df2['12 EMA'] = df2.ewm(span = 12, min_periods = 12).mean()['Close']
-    df2['MACD'] = df2['12 EMA'] - df2['26 EMA']
-    df2['Bro Line'] = df2['MACD'].mean()
-    df2['Signal Line'] = df2.ewm(span = 9, min_periods = 9).mean()['MACD']
-    df2['Indexer'] = indexer
-    df2 = df2.dropna()
-    fig = go.Figure()
-    if "." in CompanyCode:
-        king = ('MACD Graph (5 MIN) - '+ CompanyCode)
-    else:
-        king = ('MACD Graph (5 MIN) - '+ CompanyCode)
-    fig.add_trace(go.Scatter(x=df2['Indexer'],y=df2['MACD'], mode = 'lines',marker=dict(size=1, color="red"),showlegend=False))
-    fig.add_trace(go.Scatter(x=df2['Indexer'],y=df2['Signal Line'], mode = 'lines',marker=dict(size=1, color="green"),showlegend=False))
-    fig.add_trace(go.Scatter(x=df2['Indexer'],y=df2['Bro Line'], mode = 'lines',marker=dict(size=1, color="dark red"),showlegend=False))
-    fig.update_layout(title=king,xaxis_title="Time",yaxis_title="MACD Value", width=750, height = 550)
-    return fig 
-
-
-def ST_MoneyFlowIndex(selected_dropdown_value):
-    AbsTP = []
-    x = 0
-    y = 0
-    z = 0
-    w = 0
-    PosRatio = 0
-    NegRatio = 0
-    Positive = []
-    Negative = []
-    MFR = []
-    Equat = 0
-    MFI = [50,50,50,50,50,50,50,50,50,50,50,50,50,50]
-    CompanyCode = selected_dropdown_value
-    try:
-        stock = yf.download(CompanyCode,interval="5m",start =(date.today() - datetime.timedelta(days=20)), end = (date.today()+datetime.timedelta(days=1)))
-    except:
-        stock = yf.download(CompanyCode,interval="5m",start =(date.today() - datetime.timedelta(days=20)), end = date.today())
-    days = stock['Close'].count()
-    df2 = pd.DataFrame(stock)
-    df2['Typical Price'] = (df2['Close'] + df2['High'] + df2['Low'])/3
-    AbsTP.append(df2['Typical Price'].iloc[x])
-    while x < (days - 1):
-        if df2['Typical Price'].iloc[(x+1)] > df2['Typical Price'].iloc[x]:
-            AbsTP.append(df2['Typical Price'].iloc[(x+1)])
-        else:
-            AbsTP.append((df2['Typical Price'].iloc[(x+1)])*(-1))
-        x = x + 1
-    df2['Abs TP'] = AbsTP
-    df2['Raw Money'] = df2['Abs TP'] * df2['Volume']
-    while y < days:
-        if df2['Raw Money'].iloc[y] > 0:
-            Positive.append(df2['Raw Money'].iloc[y])
-            Negative.append(0)
-        else:
-            Negative.append(df2['Raw Money'].iloc[y])
-            Positive.append(0)
-        y = y + 1
-    while z < 14:
-        PosRatio = PosRatio + Positive[z]
-        NegRatio = NegRatio + Negative[z]
-        z = z + 1
-    while z < days:
-        MFR.append((PosRatio/(-1*NegRatio)))
-        PosRatio = PosRatio - Positive[(z - 14)] + Positive[z]
-        NegRatio = NegRatio - Negative[(z - 14)] + Negative[z]
-        z = z + 1
-    while w < len(MFR):
-        Equat = 100 - (100/(1+MFR[w]))
-        MFI.append(Equat)
-        w = w + 1
-    df2['MFI'] = MFI
-    x = 0
-    indexer = []
-    while x < len(df2['MFI']):
-        indexer.append(x)
-        x = x + 1
-    df2['Indexer'] = indexer
-    df2['Mid Line'] = df2['MFI'].mean()
-    df2['SELL'] = 80
-    df2['BUYER'] = 20
-    fig = go.Figure()
-    if "." in CompanyCode:
-        king = ('Money Flow Index (5 MIN) - '+ CompanyCode)
-    else:
-        king = ('Money Flow Index (5 MIN) - '+ CompanyCode)
-    fig.add_trace(go.Scatter(x=df2['Indexer'],y=df2['MFI'], mode = 'lines',marker=dict(size=1, color="blue"),showlegend=False))
-    fig.add_trace(go.Scatter(x=df2['Indexer'],y=df2['BUYER'], mode = 'lines',marker=dict(size=1, color="green"),showlegend=False))
-    fig.add_trace(go.Scatter(x=df2['Indexer'],y=df2['SELL'], mode = 'lines',marker=dict(size=1, color="red"),showlegend=False))
-    fig.add_trace(go.Scatter(x=df2['Indexer'],y=df2['Mid Line'], mode = 'lines',marker=dict(size=1, color="black"),showlegend=False))
-    fig.update_layout(title=king,xaxis_title="Time",yaxis_title="MFI Value", width=750, height = 550)
-    return fig
-
-def ST_RSI(selected_dropdown_value):
-    CompanyCode = selected_dropdown_value
-    try:
-        stock = yf.download(CompanyCode,interval="5m",start =(date.today() - datetime.timedelta(days=20)), end = (date.today()+datetime.timedelta(days=1)))
-    except:
-        stock = yf.download(CompanyCode,interval="5m",start =(date.today() - datetime.timedelta(days=20)), end = date.today())
-    days = stock['Close'].count()
-    df = pd.DataFrame(stock, columns = ['Close'])
-    df['RSI'] = pta.rsi(df['Close'], length = 14)
-    df['buy']= 20
-    df['sell'] = 80
-    x = 0
-    indexer = []
-    while x < len(df['RSI']):
-        indexer.append(x)
-        x = x + 1
-    df['Indexer'] = indexer
-    fig = go.Figure()
-    if "." in CompanyCode:
-        king = ('RSI Graph (5 MIN) - '+ CompanyCode)
-    else:
-        king = ('RSI Graph (5 MIN) - '+ CompanyCode)
-    fig.add_trace(go.Scatter(x=df['Indexer'],y=df['RSI'], mode = 'lines',marker=dict(size=1, color="blue"),showlegend=False))
-    fig.add_trace(go.Scatter(x=df['Indexer'],y=df['buy'], mode = 'lines',marker=dict(size=1, color="green"),showlegend=False))
-    fig.add_trace(go.Scatter(x=df['Indexer'],y=df['sell'], mode = 'lines',marker=dict(size=1, color="red"),showlegend=False))
-    fig.update_layout(title=king,xaxis_title="Time",yaxis_title="RSI Value", width=750, height = 550)
-    return fig 
-
-
 #this creates the app -- imports the stylesheet
 app = dash.Dash(__name__,meta_tags=[{'property':'og:image','content':'https://i.ibb.co/P5RkK55/James-Charge-1.png'}])
 server = app.server
@@ -1155,23 +987,7 @@ app.layout = html.Div([
     html.Div([
         dcc.Graph(id='Bollinger-graph'),
         dcc.Graph(id='Volatility-graph')
-        ],style={'width': '70%', 'float': 'right','display': 'inline-block','padding-right':'2%','padding-bottom':'2%'}),
-    html.Div([
-        dcc.Graph(id='ShortTerm-graph')
-        ],style={'width': '70%', 'float': 'left','display': 'inline-block','padding-right':'2%','padding-bottom':'2%'}),
-    html.Div([
-        dcc.Graph(id='macdST-graph')
-        
-        ],style={'width': '50%', 'float': 'left','display': 'inline-block'}),
-    
-    html.Div([
-        dcc.Graph(id='mfiST-graph')
-        
-        ],style={'width': '50%', 'float': 'right','display': 'inline-block'}),
-    html.Div([
-        dcc.Graph(id='RSI-graph')
-        
-        ],style={'width': '50%', 'float': 'left','display': 'inline-block'}),
+        ],style={'width': '70%', 'float': 'right','display': 'inline-block','padding-right':'2%','padding-bottom':'2%'})
     
 
 ])
@@ -1181,7 +997,6 @@ app.layout = html.Div([
 def update_graph(selected_dropdown_value, signalinput):
     fig = TradingAlgo(selected_dropdown_value, 'bitch', signalinput)
     return fig
-
 
 # for the output-list
 @app.callback(Output('my-table', 'children'), [Input('input', 'value'),Input('signalinput','value')])
@@ -1275,25 +1090,6 @@ def update_stonker(selected_dropdown_value):
     fig = BollingerBands(selected_dropdown_value)
     return fig
 
-@app.callback(Output('ShortTerm-graph','figure'),[Input('input','value')])
-def update_short_Term(selected_dropdown_value):
-    fig = Short_Term_Graph(selected_dropdown_value)
-    return fig
-
-@app.callback(Output('macdST-graph','figure'),[Input('input','value')])
-def update_STmacd(selected_dropdown_value):
-    fig = ST_MACD_BuySignal_graphed(selected_dropdown_value)
-    return fig
-
-@app.callback(Output('mfiST-graph','figure'),[Input('input','value')])
-def update_STmfi(selected_dropdown_value):
-    fig = ST_MoneyFlowIndex(selected_dropdown_value)
-    return fig
-
-@app.callback(Output('RSI-graph','figure'),[Input('input','value')])
-def update_RSI(selected_dropdown_value):
-    fig = ST_RSI(selected_dropdown_value)
-    return fig
 
 if __name__ == '__main__':
     app.run_server(debug=True)

@@ -683,7 +683,7 @@ def MoneyFlowIndex(selected_dropdown_value):
     stock = pdr.get_data_yahoo(CompanyCode,start=datetime.datetime(2019,9,1), end=date.today())
     days = stock['Close'].count()
     df2 = pd.DataFrame(stock)
-    df2['RSI'] = pta.rsi(df['Close'], length = 14)
+    df2['RSI'] = pta.rsi(df2['Close'], length = 14)
     df2['Mid Line'] = df2['RSI'].mean()
     df2['SELL'] = df2['Mid Line'] + df2['RSI'].std()
     df2['BUYER'] = df2['Mid Line'] - df2['RSI'].std()

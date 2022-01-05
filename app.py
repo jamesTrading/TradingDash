@@ -679,68 +679,25 @@ def MACD_BuySignal_graphed(selected_dropdown_value):
 
 
 def MoneyFlowIndex(selected_dropdown_value):
-    AbsTP = []
-    x = 0
-    y = 0
-    z = 0
-    w = 0
-    PosRatio = 0
-    NegRatio = 0
-    Positive = []
-    Negative = []
-    MFR = []
-    Equat = 0
-    MFI = [50,50,50,50,50,50,50,50,50,50,50,50,50,50]
     CompanyCode = selected_dropdown_value
     stock = pdr.get_data_yahoo(CompanyCode,start=datetime.datetime(2019,9,1), end=date.today())
     days = stock['Close'].count()
     df2 = pd.DataFrame(stock)
-    df2['Typical Price'] = (df2['Close'] + df2['High'] + df2['Low'])/3
-    AbsTP.append(df2['Typical Price'].iloc[x])
-    while x < (days - 1):
-        if df2['Typical Price'].iloc[(x+1)] > df2['Typical Price'].iloc[x]:
-            AbsTP.append(df2['Typical Price'].iloc[(x+1)])
-        else:
-            AbsTP.append((df2['Typical Price'].iloc[(x+1)])*(-1))
-        x = x + 1
-    df2['Abs TP'] = AbsTP
-    df2['Raw Money'] = df2['Abs TP'] * df2['Volume']
-    while y < days:
-        if df2['Raw Money'].iloc[y] > 0:
-            Positive.append(df2['Raw Money'].iloc[y])
-            Negative.append(0)
-        else:
-            Negative.append(df2['Raw Money'].iloc[y])
-            Positive.append(0)
-        y = y + 1
-    while z < 14:
-        PosRatio = PosRatio + Positive[z]
-        NegRatio = NegRatio + Negative[z]
-        z = z + 1
-    while z < days:
-        MFR.append((PosRatio/(-1*NegRatio)))
-        PosRatio = PosRatio - Positive[(z - 14)] + Positive[z]
-        NegRatio = NegRatio - Negative[(z - 14)] + Negative[z]
-        z = z + 1
-    while w < len(MFR):
-        Equat = 100 - (100/(1+MFR[w]))
-        MFI.append(Equat)
-        w = w + 1
-    df2['MFI'] = MFI
-    df2['Mid Line'] = df2['MFI'].mean()
-    df2['SELL'] = df2['Mid Line'] + df2['MFI'].std()
-    df2['BUYER'] = df2['Mid Line'] - df2['MFI'].std()
+    df2['RSI'] = pta.rsi(df['Close'], length = 14)
+    df2['Mid Line'] = df2['RSI'].mean()
+    df2['SELL'] = df2['Mid Line'] + df2['RSI'].std()
+    df2['BUYER'] = df2['Mid Line'] - df2['RSI'].std()
     fig = go.Figure()
     if "." in CompanyCode:
-        king = ('Money Flow Index - '+ CompanyCode)
+        king = ('RSI - '+ CompanyCode)
     else:
-        king = ('Money Flow Index - '+ CompanyCode)
-    fig.add_trace(go.Scatter(x=df2.index,y=df2['MFI'], mode = 'lines',marker=dict(size=1, color="blue"),showlegend=False))
+        king = ('RSI - '+ CompanyCode)
+    fig.add_trace(go.Scatter(x=df2.index,y=df2['RSI'], mode = 'lines',marker=dict(size=1, color="blue"),showlegend=False))
     fig.update_xaxes(dtick="M2",tickformat="%d\n%b\n%Y")
     fig.add_trace(go.Scatter(x=df2.index,y=df2['BUYER'], mode = 'lines',marker=dict(size=1, color="green"),showlegend=False))
     fig.add_trace(go.Scatter(x=df2.index,y=df2['SELL'], mode = 'lines',marker=dict(size=1, color="red"),showlegend=False))
     fig.add_trace(go.Scatter(x=df2.index,y=df2['Mid Line'], mode = 'lines',marker=dict(size=1, color="black"),showlegend=False))
-    fig.update_layout(title=king,xaxis_title="Time",yaxis_title="MFI Value", width=750, height = 550)
+    fig.update_layout(title=king,xaxis_title="Time",yaxis_title="RSI Value", width=750, height = 550)
     return fig
 
 

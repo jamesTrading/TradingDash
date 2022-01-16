@@ -869,6 +869,7 @@ def VolatilityGrapher(selected_dropdown_value):
 
 #this creates the app -- imports the stylesheet
 app = dash.Dash(__name__,meta_tags=[{'property':'og:image','content':'https://i.ibb.co/P5RkK55/James-Charge-1.png'}])
+app.title = "Trading Dashboard"
 server = app.server
 
 #This sets the apps basic colours

@@ -15,6 +15,7 @@ import plotly
 from bs4 import BeautifulSoup
 import yfinance as yf
 import pandas_ta as pta
+from operator import itemgetter
 
 def Profile(selected_dropdown_value):
     CompanyCode = selected_dropdown_value    
@@ -140,136 +141,81 @@ def Fundamentals(selected_dropdown_value):
                        'Operating Cashflow ("000)':Operating_Cashflow, 'Free Cashflow ("000)': Freecashflow, 'EBITDA ("000)': EBITDA, 'Dividend P/S':PS_DIV})
     return df
 
-#This is the part of the code that takes buy points and displays them
-def FibonacciGrapher(CompanyCode, SellDate, SellPrice, SellDate1, SellPrice1, BuyPrice, BuyDate): 
-    CompanyCode = CompanyCode
-    x = 0
-    y = 0
-    w = 0
-    differenceidentify = 0
-    count = 125
-    High = []
-    Low = []
-    HighValue = []
-    LowValue = []
-    HighValue2 = []
-    LowValue2 = []
-    LowValue3 = []
-    HighValue3 = []
+#This function takes an array and shoots out the swing lows, not every low
+def High_Finder(array):
+    days = len(array)
+    day_counter = 30
+    Max_Position_Gross = []
+    Max_Position_Unique = []
+    while day_counter < days:
+        Period_30 = array[day_counter - 30: day_counter]
+        maxposition = np.where(Period_30 == Period_30.max())
+        Max_Position_Gross.append(maxposition[0][0] + day_counter - 30)
+        day_counter = day_counter + 1
+    for M in Max_Position_Gross:
+        if Max_Position_Gross.count(M) > 10:
+            if M not in Max_Position_Unique:
+                Max_Position_Unique.append(M)
+    #returns index positions
+    return Max_Position_Unique
+
+#This function takes an array and shoots out the swing lows, not every low
+def Low_Finder(array):
+    days = len(array)
+    day_counter = 30
+    Min_Position_Gross = []
+    Min_Position_Unique = []
+    while day_counter < days:
+        Period_30 = array[day_counter - 30: day_counter]
+        minposition = np.where(Period_30 == Period_30.min())
+        Min_Position_Gross.append(minposition[0][0] + day_counter - 30)
+        day_counter = day_counter + 1
+    for M in Min_Position_Gross:
+        if Min_Position_Gross.count(M) > 10:
+            if M not in Min_Position_Unique:
+                Min_Position_Unique.append(M)
+    #returns index positions
+    return Min_Position_Unique
+
+
+def find_nearest(array, value):
+    array = np.asarray(array)
+    idx = (np.abs(array - value)).argmin()
+    if ((value - array[idx])/array[idx]) < 0.04 and ((value - array[idx])/array[idx]) > -0.04:
+        return True
+    else:
+        return False
+
+
+
+def FibonacciGrapher(CompanyCode):
     stock = pdr.get_data_yahoo(CompanyCode,start=datetime.datetime(2018,2,2), end=date.today())
     days = stock['Close'].count()
     close_prices = stock['Close']
     df1 = pd.DataFrame(stock, columns=['Close','Open','High','Low'])
-    periods = math.floor(days / 100)
-    breh = 0
-    maxposition = 0
-    while x < periods:
-        breh = close_prices[(days -1 - (x+1)*100):((days-1) - (x * 100))]
-        maxposition = np.where(breh == breh.max())
-        maxposition = maxposition[0][0]
-        if maxposition > 94:
-            differenceidentify = 100 - maxposition + 2
-        else:
-            differenceidentify = 0
-        High.append(max(close_prices[(days - 1 - (x+1)*100):((days-1) - (x * 100) + differenceidentify)]))
-        Low.append(min(close_prices[(days -1 - (x+1)*100):((days-1) - (x * 100))]))
-        x = x + 1
-        if ((x+1)*100 == days):
-            x = x+2
-        differenceidentify = 0
-    df1 = df1.dropna()
-    while y < (days-count):
-        HighValue.append(None)
-        LowValue.append(None)
-        y = y + 1
-    while w < count:
-        HighValue.append(round(float(High[0]), 2))
-        LowValue.append(round(float(Low[0]), 2))
-        w = w + 1
-    y = 0
-    w = 0
-    while y < (days - (2*count)):
-        HighValue2.append(None)
-        LowValue2.append(None)
-        y = y + 1
-    while w < count*2:
-        HighValue2.append(round(float(High[1]), 2))
-        LowValue2.append(round(float(Low[1]), 2))
-        w = w + 1
-    y = 0
-    while y < (days):
-        LowValue3.append(round(float(Low[2]), 2))
-        HighValue3.append(round(float(High[2]), 2))
-        y = y + 1
-    df1['Low3'] = LowValue3
-    df1['High3'] = HighValue3
-    df1['HFib'] = HighValue
-    df1['LFib'] = LowValue
-    df1['HFib2'] = HighValue2
-    df1['LFib2'] = LowValue2
     df1['MMA'] = df1.rolling(window=50).mean()['Close']
     df1['SMA'] = df1.rolling(window=20).mean()['Close']
     df1['LMA'] = df1.rolling(window=200).mean()['Close']
     df1['20 Day Volatility'] = df1['Close'].rolling(window=20).std()
     df1['Top Bollinger Band']=df1['SMA']+2*df1['20 Day Volatility']
     df1['Bottom Bollinger Band']=df1['SMA']-2*df1['20 Day Volatility']
-    df1['Bollinger Band Difference']=df1['Top Bollinger Band']-df1['Bottom Bollinger Band']
-    x = 1
-    BolRet = [0]
-    while x < days:
-        BolRet.append((df1['Bollinger Band Difference'][x]-df1['Bollinger Band Difference'][x-1])/df1['Bollinger Band Difference'][x-1])
-        x = x + 1
-    x = 1
-    Daily_Return = [0]
-    while x < days:
-        Daily_Return.append((df1['Close'][x]-df1['Close'][x-1])/df1['Close'][x-1])
-        x = x+1
-    df1['Daily Return']=Daily_Return
-    df1['252 Day Volatility'] = df1['Daily Return'].rolling(window=252).std()
-    df1['180 Day Volatility'] = df1['Daily Return'].rolling(window=180).std()
-    df1['60 Day Volatility'] = df1['Daily Return'].rolling(window=60).std()
-    df1['30 Day Volatility'] = df1['Daily Return'].rolling(window=20).std()
-    df1['Annual_Volatility252'] = (df1['252 Day Volatility'])*(252**(1/2))
-    df1['Annual_Volatility180'] = (df1['180 Day Volatility'])*(252**(1/2))
-    df1['Annual_Volatility60'] = (df1['60 Day Volatility'])*(252**(1/2))
-    df1['Annual_Volatility20'] = (df1['30 Day Volatility'])*(252**(1/2))
-    df1['Bollinger Diff Return'] = BolRet
-    df1['CUNT']=df1['Bollinger Diff Return'].mean()
-    df1['BUTT']=df1['CUNT']-df1['Bollinger Diff Return'].std()
-    x = 25
-    BollingerDate = []
-    Under = []
-    Over = []
-    Bollinger = []
-    while x < days-5:
-        if df1['Annual_Volatility20'][x]<df1['Annual_Volatility60'][x]:
-            if df1['Annual_Volatility20'][x]<df1['Annual_Volatility180'][x]:
-                if df1['Annual_Volatility20'][x]<df1['Annual_Volatility252'][x]:
-                    if df1['Annual_Volatility20'][x-1]>df1['Annual_Volatility60'][x-1] or df1['Annual_Volatility20'][x-1]>df1['Annual_Volatility180'][x-1] or df1['Annual_Volatility20'][x-1]>df1['Annual_Volatility252'][x-1]:
-                        Under = df1['Bollinger Diff Return'][x-5:x+1]
-                        Underposition = np.where(Under == Under.min())
-                        Underposition = Underposition[0][0]
-                        Over = df1['Bollinger Diff Return'][x-4+Underposition:x+2+Underposition]
-                        Overposition = np.where(Over == Over.max())
-                        Overposition = Overposition[0][0]
-                        if df1['Bollinger Diff Return'][x-5+Underposition]<df1['BUTT'][x]:
-                               if df1['Bollinger Diff Return'][x-4+Underposition+Overposition]>0:
-                                    BollingerDate.append(df1.index.date[x-4+Underposition+Overposition])
-                                    Bollinger.append((df1['High'][x-4+Underposition+Overposition])*1.05)
-        Under = df1['Bollinger Diff Return'][x-5:x+1]
-        Underposition = np.where(Under == Under.min())
-        Underposition = Underposition[0][0]
-        Over = df1['Bollinger Diff Return'][x-4+Underposition:x+2+Underposition]
-        Overposition = np.where(Over == Over.max())
-        Overposition = Overposition[0][0]
-        if df1['Bollinger Diff Return'][x-5+Underposition]<df1['BUTT'][x]:
-               if df1['Bollinger Diff Return'][x-4+Underposition+Overposition]>0:
-                   if min(df1['Annual_Volatility20'][x-4:x-4+Underposition+Overposition+1])<min(df1['Annual_Volatility60'][x-4:x-4+Underposition+Overposition+1]):
-                       if min(df1['Annual_Volatility20'][x-4:x-4+Underposition+Overposition+1])<min(df1['Annual_Volatility180'][x-4:x-4+Underposition+Overposition+1]):
-                           if min(df1['Annual_Volatility20'][x-4:x-4+Underposition+Overposition+1])<min(df1['Annual_Volatility252'][x-4:x-4+Underposition+Overposition+1]):
-                                BollingerDate.append(df1.index.date[x-4+Underposition+Overposition])
-                                Bollinger.append((df1['High'][x-4+Underposition+Overposition])*1.05)
-        x = x + 1
+    #This finds the resistance spots of the chart
+    SR_Price = []
+    Finding_Resistance = High_Finder(df1['High'])
+    Finding_Support = Low_Finder(df1['Low'])
+    for f in Finding_Resistance:
+        SR_Price.append((df1.index[f],round(df1['High'][f],3)))
+    for f in Finding_Support:
+        SR_Price.append((df1.index[f],round(df1['Low'][f],3)))
+    SR_Price.sort(key=itemgetter(0))
+    #trying to find only unique prices
+    SR_Unique_Price = [SR_Price[0][1]]
+    SR_Unique = [(SR_Price[0][0],SR_Price[0][1])]
+    for s in SR_Price:
+        if find_nearest(SR_Unique_Price, s[1]) == False:
+            SR_Unique.append(s)
+            SR_Unique_Price.append(s[1])
+
     fig = go.Figure()
     king = 0
     if "." in CompanyCode:
@@ -277,26 +223,11 @@ def FibonacciGrapher(CompanyCode, SellDate, SellPrice, SellDate1, SellPrice1, Bu
     else:
         king = ('US Market - '+ CompanyCode)
     fig = go.Figure(data=[go.Candlestick(x=df1.index,open=df1['Open'],high=df1['High'],low=df1['Low'],close=df1['Close'])])
+    for s in SR_Unique:
+        fig.add_trace(go.Scatter(y = [s[1],s[1]],x = [s[0],max(df1.index)],mode = 'lines',marker=dict(size=1, color="blue"),showlegend=False, opacity = 0.5))
     fig.add_trace(go.Scatter(x=df1.index,y=df1['Bottom Bollinger Band'], mode = 'lines',marker=dict(size=1, color="purple"),showlegend=False))
     fig.add_trace(go.Scatter(x=df1.index,y=df1['Top Bollinger Band'], mode = 'lines',fill='tonexty',fillcolor='rgba(173,204,255,0.2)',marker=dict(size=1, color="purple"),showlegend=False))
-    fig.update_layout(xaxis_rangeslider_visible=False, width = 1000, height = 700,title=king, showlegend=False)
-    df2 = pd.DataFrame(data = {'Dates':BuyDate,'BuyPrice':BuyPrice})
-    fig.add_trace(go.Scatter(x=df2['Dates'],y=df2['BuyPrice'], mode = 'markers',marker=dict(size=12, color="green"),showlegend=False))
-    df3 = pd.DataFrame(data = {'Dates':SellDate,'SellPrice':SellPrice})
-    fig.add_trace(go.Scatter(x=df3['Dates'],y=df3['SellPrice'], mode = 'markers',marker=dict(size=12, color="Red"),showlegend=False))
-    df4 = pd.DataFrame(data = {'Dates1':SellDate1,'SellPrice1':SellPrice1})
-    fig.add_trace(go.Scatter(x=df4['Dates1'],y=df4['SellPrice1'], mode = 'markers',marker=dict(size=12, color="Orange"),showlegend=False))
-    fig.update_xaxes(dtick="M2",tickformat="%d\n%b\n%Y")
-    fig.add_trace(go.Scatter(x=df1.index,y=df1['LMA'], mode = 'lines',marker=dict(size=1, color="orange"),showlegend=False))
-    fig.add_trace(go.Scatter(x=df1.index,y=df1['SMA'], mode = 'lines',marker=dict(size=1, color="dark grey"),showlegend=False))
-    fig.add_trace(go.Scatter(x=df1.index,y=df1['HFib'], mode = 'lines',marker=dict(size=1, color="purple"),showlegend=False))
-    fig.add_trace(go.Scatter(x=df1.index,y=df1['HFib2'], mode = 'lines',marker=dict(size=1, color="purple"),showlegend=False))
-    fig.add_trace(go.Scatter(x=df1.index,y=df1['High3'], mode = 'lines',marker=dict(size=1, color="purple"),showlegend=False))
-    fig.add_trace(go.Scatter(x=df1.index,y=df1['LFib'], mode = 'lines',marker=dict(size=1, color="black"),showlegend=False))
-    fig.add_trace(go.Scatter(x=df1.index,y=df1['LFib2'], mode = 'lines',marker=dict(size=1, color="black"),showlegend=False))
-    fig.add_trace(go.Scatter(x=df1.index,y=df1['Low3'], mode = 'lines',marker=dict(size=1, color="black"),showlegend=False))
-    df4 = pd.DataFrame(data = {'BolDates':BollingerDate,'BolPrice':Bollinger})
-    fig.add_trace(go.Scatter(x=df4['BolDates'],y=df4['BolPrice'], mode = 'markers',marker=dict(size=12, color="black"), marker_symbol = "arrow-bar-down",showlegend=False))
+    fig.update_layout(xaxis_rangeslider_visible=False, width = 1200, height = 850,title=king, showlegend=False)
     return fig
 
 
@@ -648,7 +579,7 @@ def TradingAlgo(selected_dropdown_value, junky, signalinput):
         outputlist.append(("Sell strategy where yesterday the tick was totally above the top bollinger band and today the high was below. The next 10 day low return is: N/A"))
     
     if factor == 'bitch': 
-        bloop = FibonacciGrapher(CompanyCode, SellDate, SellPrice, SellDate1, SellPrice1, BuyPrice, BuyDate)
+        bloop = FibonacciGrapher(CompanyCode)
         return bloop
     else:
         return outputlist

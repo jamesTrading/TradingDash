@@ -227,7 +227,7 @@ def FibonacciGrapher(CompanyCode):
         fig.add_trace(go.Scatter(y = [s[1],s[1]],x = [s[0],max(df1.index)],mode = 'lines',marker=dict(size=1, color="blue"),showlegend=False, opacity = 0.5))
     fig.add_trace(go.Scatter(x=df1.index,y=df1['Bottom Bollinger Band'], mode = 'lines',marker=dict(size=1, color="purple"),showlegend=False))
     fig.add_trace(go.Scatter(x=df1.index,y=df1['Top Bollinger Band'], mode = 'lines',fill='tonexty',fillcolor='rgba(173,204,255,0.2)',marker=dict(size=1, color="purple"),showlegend=False))
-    fig.update_layout(xaxis_rangeslider_visible=False, width = 1200, height = 850,title=king, showlegend=False)
+    fig.update_layout(xaxis_rangeslider_visible=False, width = 1000, height = 750,title=king, showlegend=False)
     return fig
 
 

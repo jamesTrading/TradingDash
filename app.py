@@ -689,13 +689,13 @@ def ReturnCalculator(selected_dropdown_value):
     return outputlist
     
 
-def Option_Calculator(selected_dropdown_value,input1, input2, input3, input4, input5, input6, input7):
+def Option_Calculator(selected_dropdown_value,input1, input8, input2, input3, input4, input5, input6, input7):
     strike = float(input2)
     risk = float(input4)
     Annual_Volatility = float(input7)
     stock = pdr.get_data_yahoo(selected_dropdown_value,start=datetime.datetime(2018,1,1), end=date.today())
     days = stock['Close'].count()
-    Stock_Price = round(stock['Close'][len(stock['Close'])-1],3)
+    Stock_Price = round(input8,3)
     df1 = pd.DataFrame(stock, columns=['Close','Open','Low','High'])
     delta_time = (input3/252)/input6
     u = math.exp(Annual_Volatility*(delta_time**(1/2)))
@@ -845,6 +845,7 @@ app.layout = html.Div([
         html.Table(id = 'my-returns',style={'padding-bottom': '15%'}),
         html.H4('Option Pricing'),
         dcc.Input(id='input-1-state', type='text', placeholder='C or P'),
+        dcc.Input(id='input-8-state', type='number', placeholder='Market Price'),
         dcc.Input(id='input-2-state', type='number', placeholder='Strike Price'),
         dcc.Input(id='input-3-state', type='number', placeholder='Days to Expiry'),
         dcc.Input(id='input-4-state', type='number', placeholder='Risk Free Rate'),
@@ -929,19 +930,20 @@ def generate_profile(selected_dropdown_value):
               Input('submit-button-state', 'n_clicks'),
               State('input', 'value'),
               State('input-1-state', 'value'),
+              State('input-8-state', 'value'),
               State('input-2-state', 'value'),
               State('input-3-state', 'value'),
               State('input-4-state', 'value'),
               State('input-5-state', 'value'),
               State('input-6-state', 'value'),
               State('input-7-state', 'value'))
-def update_output(n_clicks, selected_dropdown_value, input1, input2, input3, input4, input5, input6, input7):
+def update_output(n_clicks, selected_dropdown_value, input1, input8, input2, input3, input4, input5, input6, input7):
     if n_clicks == 0:
         return u'''
                 Option calculation pending'''
     else:
         try:
-            Stock_Price, Premium, Delta = Option_Calculator(selected_dropdown_value, input1, input2, input3, input4, input5, input6, input7)
+            Stock_Price, Premium, Delta = Option_Calculator(selected_dropdown_value, input1, input8, input2, input3, input4, input5, input6, input7)
             return "The company code is: ",selected_dropdown_value, ". The current price is: ",round(Stock_Price,2),". the premium is: ",round(Premium,4),". the delta is: ",round(Delta,4)
         except:
             return "The company code is: ",selected_dropdown_value," ...Enter valid details"

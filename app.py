@@ -756,15 +756,18 @@ def VolatilityTable(selected_dropdown_value):
     df1['180 Day Volatility'] = df1['Daily Return'].rolling(window=180).std()
     df1['60 Day Volatility'] = df1['Daily Return'].rolling(window=60).std()
     df1['30 Day Volatility'] = df1['Daily Return'].rolling(window=30).std()
+    df1['10 Day Volatility'] = df1['Daily Return'].rolling(window=10).std()
     Annual_Volatility252 = (df1['252 Day Volatility'][len(df1['252 Day Volatility'])-1])*(252**(1/2))
     Annual_Volatility180 = (df1['180 Day Volatility'][len(df1['180 Day Volatility'])-1])*(252**(1/2))
     Annual_Volatility60 = (df1['60 Day Volatility'][len(df1['60 Day Volatility'])-1])*(252**(1/2))
     Annual_Volatility30 = (df1['30 Day Volatility'][len(df1['30 Day Volatility'])-1])*(252**(1/2))
+    Annual_Volatility10 = (df1['10 Day Volatility'][len(df1['10 Day Volatility'])-1])*(252**(1/2))
     outputlist.append(("The code is: ",selected_dropdown_value))
     outputlist.append(("The annual volatility is (252 period): ",round(Annual_Volatility252,4)))
     outputlist.append(("The annual volatility is (180 period): ",round(Annual_Volatility180,4)))
     outputlist.append(("The annual volatility is (60 period): ",round(Annual_Volatility60,4)))
     outputlist.append(("The annual volatility is (30 period): ",round(Annual_Volatility30,4)))
+    outputlist.append(("The annual volatility is (10 period): ",round(Annual_Volatility10,4)))
     return outputlist
 
 def VolatilityGrapher(selected_dropdown_value):
